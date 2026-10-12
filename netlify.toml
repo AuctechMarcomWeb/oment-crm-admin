@@ -1,0 +1,26 @@
+# Netlify: this folder is a static site — no build step.
+[build]
+  publish = "."
+  command = ""
+
+# config.js holds the backend URL — never cache it, so a change applies at once
+[[headers]]
+  for = "/config.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# /admin and /employee without the trailing slash
+[[redirects]]
+  from = "/admin"
+  to = "/admin/"
+  status = 301
+[[redirects]]
+  from = "/employee"
+  to = "/employee/"
+  status = 301

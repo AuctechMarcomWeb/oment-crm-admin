@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>Oment — Sign in</title>
+    <meta
+      name="description"
+      content="Oment — projects, time, attendance, pay and billing. Sign in to the admin panel or the employee app."
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='16' fill='%23007AFF'/><path d='M28 14h8v36h-8zM14 28h36v8H14z' fill='white'/></svg>"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500..700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="config.js"></script>
+    <style>
+      :root {
+        --bg: #f4f3ef;
+        --card: #ffffff;
+        --line: rgba(0, 0, 0, 0.08);
+        --t1: #18171a;
+        --t2: #57555b;
+        --t3: #8e8b90;
+        --blue: #007aff;
+        --blue-soft: #e8f1ff;
+        --green: #059669;
+        --green-soft: #e7f7f0;
+        --red: #dc2626;
+        --serif: "Source Serif 4", Georgia, serif;
+        --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 28px rgba(0, 0, 0, 0.06);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #121113;
+          --card: #1c1b1e;
+          --line: rgba(255, 255, 255, 0.1);
+          --t1: #f3f2ef;
+          --t2: #b6b3b9;
+          --t3: #7f7c83;
+          --blue: #4c9bff;
+          --blue-soft: rgba(76, 155, 255, 0.14);
+          --green: #34d399;
+          --green-soft: rgba(52, 211, 153, 0.12);
+          --red: #f87171;
+          --shadow:
+            0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px rgba(0, 0, 0, 0.35);
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+      }
+      body {
+        background: var(--bg);
+        color: var(--t1);
+        font-family: var(--sans);
+        -webkit-font-smoothing: antialiased;
+        background-image:
+          radial-gradient(
+            1100px 520px at 10% -10%,
+            var(--blue-soft),
+            transparent 60%
+          ),
+          radial-gradient(
+            900px 480px at 110% 110%,
+            var(--green-soft),
+            transparent 60%
+          );
+        background-attachment: fixed;
+      }
+      .wrap {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        max-width: 980px;
+        margin: 0 auto;
+        padding: max(28px, env(safe-area-inset-top)) 22px
+          max(24px, env(safe-area-inset-bottom));
+      }
+      header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .mark {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        background: var(--blue);
+        display: grid;
+        place-items: center;
+        box-shadow: 0 6px 18px rgba(0, 122, 255, 0.35);
+      }
+      .word {
+        font-family: var(--serif);
+        font-weight: 700;
+        font-size: 21px;
+        letter-spacing: -0.01em;
+      }
+      .hero {
+        margin: 9vh 0 34px;
+        max-width: 640px;
+      }
+      h1 {
+        font-family: var(--serif);
+        font-weight: 650;
+        font-size: clamp(34px, 6vw, 54px);
+        line-height: 1.05;
+        letter-spacing: -0.025em;
+        margin: 0 0 14px;
+      }
+      .lede {
+        font-size: 17px;
+        line-height: 1.6;
+        color: var(--t2);
+        margin: 0;
+      }
+      .doors {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+      }
+      .door {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        padding: 24px;
+        border-radius: 20px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        box-shadow: var(--shadow);
+        color: inherit;
+        text-decoration: none;
+        transition:
+          transform 0.18s ease,
+          box-shadow 0.18s ease,
+          border-color 0.18s ease;
+      }
+      .door:hover {
+        transform: translateY(-3px);
+        border-color: color-mix(in srgb, var(--accent) 40%, var(--line));
+        box-shadow:
+          0 2px 4px rgba(0, 0, 0, 0.05),
+          0 18px 40px rgba(0, 0, 0, 0.1);
+      }
+      .door:focus-visible {
+        outline: 3px solid var(--accent);
+        outline-offset: 3px;
+      }
+      .ico {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        background: var(--soft);
+        color: var(--accent);
+      }
+      .ico svg {
+        width: 24px;
+        height: 24px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .door h2 {
+        font-family: var(--serif);
+        font-size: 24px;
+        font-weight: 650;
+        letter-spacing: -0.01em;
+        margin: 0;
+      }
+      .door p {
+        margin: 0;
+        color: var(--t2);
+        font-size: 14.5px;
+        line-height: 1.55;
+      }
+      .door ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 6px;
+        font-size: 13.5px;
+        color: var(--t2);
+      }
+      .door li::before {
+        content: "✓";
+        color: var(--accent);
+        font-weight: 700;
+        margin-right: 8px;
+      }
+      .cta {
+        margin-top: auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-top: 12px;
+        border-top: 1px solid var(--line);
+      }
+      .cta span {
+        font-weight: 600;
+        color: var(--accent);
+        font-size: 14.5px;
+      }
+      .cta svg {
+        width: 20px;
+        height: 20px;
+        stroke: var(--accent);
+        stroke-width: 2;
+        fill: none;
+        transition: transform 0.18s ease;
+      }
+      .door:hover .cta svg {
+        transform: translateX(4px);
+      }
+      .signed {
+        position: absolute;
+        top: 18px;
+        right: 18px;
+        font-size: 11.5px;
+        font-weight: 600;
+        color: var(--green);
+        background: var(--green-soft);
+        padding: 4px 9px;
+        border-radius: 99px;
+      }
+      .signed:empty {
+        display: none;
+      }
+      .admin {
+        --accent: var(--blue);
+        --soft: var(--blue-soft);
+      }
+      .emp {
+        --accent: var(--green);
+        --soft: var(--green-soft);
+      }
+      footer {
+        margin-top: auto;
+        padding-top: 40px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 20px;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 12.5px;
+        color: var(--t3);
+      }
+      .status {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        border-radius: 99px;
+        background: var(--card);
+        border: 1px solid var(--line);
+      }
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--t3);
+      }
+      .status[data-state="checking"] .dot {
+        animation: pulse 1.2s ease-in-out infinite;
+      }
+      .status[data-state="up"] .dot {
+        background: var(--green);
+        box-shadow: 0 0 0 3px var(--green-soft);
+      }
+      .status[data-state="down"] .dot {
+        background: var(--red);
+      }
+      .status[data-state="down"] {
+        color: var(--red);
+        max-width: 100%;
+      }
+      @keyframes pulse {
+        50% {
+          opacity: 0.35;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .door,
+        .cta svg {
+          transition: none;
+        }
+        .status .dot {
+          animation: none !important;
+        }
+      }
+      @media (max-width: 720px) {
+        .doors {
+          grid-template-columns: 1fr;
+        }
+        .hero {
+          margin: 6vh 0 26px;
+        }
+        .lede {
+          font-size: 16px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="mark">
+          <svg width="16" height="16" viewBox="0 0 18 18">
+            <rect x="7" y="1" width="4" height="16" rx="1" fill="#fff" />
+            <rect x="1" y="7" width="16" height="4" rx="1" fill="#fff" />
+          </svg>
+        </div>
+        <div class="word">Oment</div>
+      </header>
+
+      <section class="hero">
+        <h1>Run the work.<br />Pay people right.</h1>
+        <p class="lede">
+          Projects, time tracking, attendance, piece-rate pay and client billing
+          — in one place. Choose where you want to sign in.
+        </p>
+      </section>
+
+      <nav class="doors" aria-label="Choose an app">
+        <a class="door admin" href="admin/">
+          <span class="signed" id="state-admin"></span>
+          <div class="ico">
+            <svg viewBox="0 0 24 24">
+              <rect x="3" y="3" width="7" height="7" rx="1.5" />
+              <rect x="14" y="3" width="7" height="7" rx="1.5" />
+              <rect x="3" y="14" width="7" height="7" rx="1.5" />
+              <rect x="14" y="14" width="7" height="7" rx="1.5" />
+            </svg>
+          </div>
+          <div>
+            <h2>Admin panel</h2>
+            <p>For owners and managers.</p>
+          </div>
+          <ul>
+            <li>Projects, milestones &amp; reviews</li>
+            <li>People, leave &amp; live attendance</li>
+            <li>Books: invoices, payments, recurring billing</li>
+            <li>Payouts &amp; profitability</li>
+          </ul>
+          <div class="cta">
+            <span>Sign in as admin</span
+            ><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+          </div>
+        </a>
+        <a class="door emp" href="employee/">
+          <span class="signed" id="state-employee"></span>
+          <div class="ico">
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="8" r="4" />
+              <path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1" />
+            </svg>
+          </div>
+          <div>
+            <h2>Employee app</h2>
+            <p>For your team.</p>
+          </div>
+          <ul>
+            <li>Your tasks with start / pause / complete</li>
+            <li>Time tracker &amp; attendance</li>
+            <li>Leave, notices &amp; chat with the admin</li>
+            <li>Your wallet and pay</li>
+          </ul>
+          <div class="cta">
+            <span>Sign in as employee</span
+            ><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+          </div>
+        </a>
+      </nav>
+
+      <footer>
+        <span class="status" id="status" data-state="checking" role="status"
+          ><span class="dot"></span
+          ><span id="status-text">Checking the server…</span></span
+        >
+        <span>© <span id="yr"></span> Oment</span>
+      </footer>
+    </div>
+
+    <script>
+      (function () {
+        "use strict";
+        document.getElementById("yr").textContent = new Date().getFullYear();
+        try {
+          if (localStorage.getItem("oment_jwt_admin"))
+            document.getElementById("state-admin").textContent = "Signed in";
+          if (localStorage.getItem("oment_jwt_employee"))
+            document.getElementById("state-employee").textContent = "Signed in";
+        } catch (e) {}
+
+        /* a password-reset link that landed here by mistake: send it on */
+        var q = location.search;
+        if (/[?&]reset=/.test(q)) {
+          location.replace(
+            (/[?&]app=admin\b/.test(q) ? "admin/" : "employee/") + q,
+          );
+          return;
+        }
+
+        var el = document.getElementById("status"),
+          txt = document.getElementById("status-text");
+        var base = window.OMENT_API_BASE;
+        if (!base) {
+          el.dataset.state = "down";
+          txt.textContent =
+            "Server address missing — set OMENT_API_BASE in config.js";
+          return;
+        }
+        var ctrl =
+          typeof AbortController !== "undefined" ? new AbortController() : null;
+        var slow = setTimeout(function () {
+          if (el.dataset.state === "checking")
+            txt.textContent =
+              "Waking the server up… (free hosting can take ~30 s)";
+        }, 4000);
+        var stop = setTimeout(function () {
+          if (ctrl) ctrl.abort();
+        }, 45000);
+        fetch(
+          base.replace(/\/+$/, "") + "/health",
+          ctrl ? { signal: ctrl.signal } : {},
+        )
+          .then(function (r) {
+            return r.json().then(function (j) {
+              return r.ok && j && j.ok;
+            });
+          })
+          .then(function (up) {
+            clearTimeout(slow);
+            clearTimeout(stop);
+            el.dataset.state = up ? "up" : "down";
+            txt.textContent = up
+              ? "Server online"
+              : "Server is up but the database is not connected";
+          })
+          .catch(function () {
+            clearTimeout(slow);
+            clearTimeout(stop);
+            el.dataset.state = "down";
+            txt.textContent =
+              "Can’t reach the server at " +
+              base +
+              " — is the backend running, and is this site in CORS_ORIGIN?";
+          });
+      })();
+    </script>
+  </body>
+</html>

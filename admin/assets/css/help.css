@@ -1,0 +1,282 @@
+
+
+/* ══════════════════ HELP DOT + TOOLTIP ══════════════════ */
+.help-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--s3);
+  color: var(--t3);
+  font-weight: 700;
+  cursor: help;
+  vertical-align: middle;
+  margin-left: 5px;
+  position: relative;
+  flex-shrink: 0;
+  transition: background .15s, color .15s;
+  user-select: none;
+}
+.help-dot:hover,
+.help-dot:focus-visible {
+  background: var(--t1);
+  color: #fff;
+  outline: none;
+}
+
+.help-tip {
+  position: absolute;
+  bottom: calc(100% + 9px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  width: 268px;
+  background: var(--t1);
+  color: #fff;
+  padding: 11px 13px;
+  border-radius: var(--r10);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.55;
+  letter-spacing: 0;
+  text-align: left;
+  text-transform: none;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .16s var(--ease), transform .16s var(--ease);
+  z-index: 900;
+  box-shadow: var(--sh2);
+  white-space: normal;
+}
+.help-tip strong {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 650;
+  margin-bottom: 3px;
+}
+.help-tip em {
+  display: block;
+  margin-top: 7px;
+  padding-top: 7px;
+  border-top: 1px solid rgba(255, 255, 255, .16);
+  font-style: normal;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  opacity: .72;
+}
+.help-tip .help-more {
+  display: block;
+  margin-top: 7px;
+  font-size: 10.5px;
+  opacity: .5;
+}
+.help-tip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--t1);
+}
+.help-dot:hover .help-tip,
+.help-dot:focus-visible .help-tip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Screen edge pe tooltip kat na jaaye */
+@media (max-width: 640px) {
+  .help-tip { width: 210px; }
+}
+
+/* ══════════════════ TERM HELP MODAL ══════════════════ */
+.term-help-formula {
+  margin-top: 14px;
+  padding: 11px 13px;
+  background: var(--s2);
+  border-radius: var(--r8);
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--t2);
+}
+.term-help-formula span {
+  display: block;
+  font-family: var(--font);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--t3);
+  margin-bottom: 4px;
+}
+
+/* ══════════════════ ACCESSIBILITY ══════════════════ */
+
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 2000;
+  background: var(--t1);
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 0 0 var(--r8) 0;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.skip-link:focus {
+  left: 0;
+}
+
+
+:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+  border-radius: var(--r4);
+}
+.btn:focus-visible,
+.tab-btn:focus-visible,
+.nav-item:focus-visible,
+.icon-btn:focus-visible,
+.app-card:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+.form-input:focus-visible,
+.form-select:focus-visible,
+.form-textarea:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 1px;
+}
+
+/* Screen-reader-only text */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+
+[role="button"] { cursor: pointer; }
+
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+/* ══════════════════ TEACHING EMPTY STATES ══════════════════ */
+.empty-teach {
+  text-align: center;
+  padding: 34px 24px;
+  max-width: 380px;
+  margin: 0 auto;
+}
+.empty-teach-icon {
+  font-size: 30px;
+  margin-bottom: 10px;
+  opacity: .7;
+}
+.empty-teach-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.empty-teach-body {
+  font-size: 12.5px;
+  color: var(--t3);
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+
+/* ══════════════════ PAGE GUIDE ══════════════════ */
+
+.page-guide{
+  background:#EFF6FF;
+  border:1px solid rgba(37,99,235,.16);
+  border-radius:var(--r12);
+  padding:14px 16px;
+  margin-bottom:18px;
+}
+.page-guide-head{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  margin-bottom:9px;
+}
+.page-guide-icon{
+  width:20px;height:20px;
+  border-radius:50%;
+  background:var(--blue);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;font-style:italic;
+  flex-shrink:0;margin-top:1px;
+}
+.page-guide-what{
+  flex:1;
+  font-size:14px;
+  font-weight:650;
+  color:#1E3A8A;
+  line-height:1.5;
+}
+.page-guide-close{
+  background:none;border:none;cursor:pointer;
+  color:rgba(30,58,138,.45);
+  font-size:14px;line-height:1;padding:2px 4px;
+  border-radius:var(--r4);flex-shrink:0;
+}
+.page-guide-close:hover{color:#1E3A8A;background:rgba(37,99,235,.1)}
+
+.page-guide-steps{
+  margin:0;padding:0;list-style:none;
+  padding-left:30px;
+}
+.page-guide-steps li{
+  position:relative;
+  font-size:13.5px;
+  line-height:1.65;
+  color:#1E40AF;
+  padding:3px 0 3px 20px;
+}
+.page-guide-steps li::before{
+  content:'';
+  position:absolute;
+  left:2px;top:11px;
+  width:6px;height:6px;
+  border-radius:50%;
+  background:rgba(37,99,235,.4);
+}
+.page-guide-steps b{font-weight:700;color:#1E3A8A}
+
+.guide-reopen{
+  display:inline-flex;align-items:center;gap:7px;
+  background:none;border:1px dashed var(--b2);
+  color:var(--t3);
+  font-family:var(--font);font-size:12.5px;
+  padding:7px 13px;border-radius:99px;
+  cursor:pointer;margin-bottom:16px;
+  transition:.15s;
+}
+.guide-reopen:hover{border-color:var(--blue);color:var(--blue);background:#EFF6FF}
+.guide-reopen span{
+  width:16px;height:16px;border-radius:50%;
+  background:var(--s3);color:var(--t2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;
+}
+
+@media (max-width:640px){
+  .page-guide-steps{padding-left:0}
+  .page-guide-what{font-size:13.5px}
+  .page-guide-steps li{font-size:13px}
+}

@@ -1,0 +1,66 @@
+/* ── Visual polish for the employee app ───────────────────────────────── */
+.content { background: var(--bg, #F4F3EF); }
+.view { padding: 22px 26px 96px; }
+.view > * { max-width: 1180px; }
+.card { border-radius: 16px !important; border: 1px solid rgba(0,0,0,.06) !important; box-shadow: 0 1px 2px rgba(0,0,0,.03), 0 6px 18px rgba(0,0,0,.04) !important; }
+.shd { margin-bottom: 16px; }
+.stitle { font-size: 22px; letter-spacing: -.01em; }
+.ssub { color: var(--t3); font-size: 13px; margin-top: 2px; }
+.ni { border-radius: 10px; margin: 1px 6px; transition: background .15s ease; }
+.btn { border-radius: 10px; }
+.nbadge { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 99px; font-size: 10.5px; font-weight: 700; align-items: center; justify-content: center; }
+
+/* current-task bar */
+#task-bar { position: absolute; right: 26px; bottom: 16px; z-index: 40; display: none; align-items: center; gap: 10px;
+  max-width: min(620px, calc(100% - 52px)); padding: 10px 12px 10px 14px; border-radius: 16px;
+  background: rgba(24,23,26,.92); color: #fff; box-shadow: 0 10px 30px rgba(0,0,0,.25); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+#task-bar .tb-dot { width: 10px; height: 10px; border-radius: 50%; background: #F59E0B; flex-shrink: 0; }
+#task-bar .tb-dot.on { background: #22C55E; box-shadow: 0 0 0 4px rgba(34,197,94,.25); animation: tbpulse 1.6s ease-in-out infinite; }
+@keyframes tbpulse { 50% { box-shadow: 0 0 0 7px rgba(34,197,94,.08); } }
+#task-bar .tb-main { flex: 1; min-width: 0; }
+#task-bar .tb-t { font-size: 13.5px; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#task-bar .tb-s { font-size: 12px; opacity: .75; font-variant-numeric: tabular-nums; }
+#task-bar .tb-btn { border: 0; border-radius: 10px; padding: 8px 11px; font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer;
+  background: rgba(255,255,255,.12); color: #fff; white-space: nowrap; transition: background .15s ease; }
+#task-bar .tb-btn:hover { background: rgba(255,255,255,.22); }
+#task-bar .tb-done { background: #22C55E; }
+#task-bar .tb-done:hover { background: #16A34A; }
+@media (max-width: 640px) {
+  .view { padding: 14px 14px 80px; }
+  #task-bar { left: 10px; right: 10px; bottom: 74px; max-width: none; gap: 6px; padding: 8px 8px 8px 12px; }
+  #task-bar .tb-btn { padding: 7px 8px; font-size: 12px; }
+}
+@media (prefers-reduced-motion: reduce) { #task-bar .tb-dot.on { animation: none; } }
+
+/* ── Dashboard top cards: always fill the whole row ── */
+#v-dashboard .sbar { display: grid !important; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+#v-dashboard .sbar .scard { min-width: 0; }
+
+/* ── Active task card (Dashboard): two balanced columns on larger screens ──
+   Left: eyebrow, title, deadline badge, description, project chips.
+   Right: big timer, hint, expected / actual / saved, buttons.
+   Phones keep the original single-column layout. */
+@media (min-width: 900px) {
+  .fc {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 460px);
+    column-gap: 36px;
+    row-gap: 0;
+    align-items: center;
+    padding: 24px 26px;
+  }
+  .fc > .fc-ey     { grid-column: 1; grid-row: 1; align-self: end; margin-bottom: 6px; }
+  .fc > .fc-t      { grid-column: 1; grid-row: 2; font-size: 20px; margin-bottom: 0; align-self: start; }
+  .fc > .fc-dl     { grid-column: 1; grid-row: 3; margin: 0; }
+  .fc > .fc-d      { grid-column: 1; grid-row: 4; margin: 0; }
+  .fc > .fc-chips  { grid-column: 1; grid-row: 5; margin: 0; }
+
+  .fc > .fc-timer  { grid-column: 2; grid-row: 1 / span 2; justify-self: end; font-size: 48px; margin: 0 0 6px; }
+  .fc > .fc-timer + div { grid-column: 2; grid-row: 3; text-align: right; margin: 0 0 8px !important; }   /* hint line */
+  .fc > .fc-compare { grid-column: 2; grid-row: 4; margin: 0 0 12px; gap: 0; padding: 12px 14px; }
+  .fc > .fc-acts   { grid-column: 2; grid-row: 5; justify-content: flex-end; }
+  .fc-compare .fc-cc { flex: 1; padding: 0 12px; }
+  .fc-compare .fc-cc:first-child { padding-left: 0; }
+  .fc-compare .fc-cc-v { font-size: 15px; }
+  .fc-acts .fcb { padding-left: 16px; padding-right: 16px; }
+}

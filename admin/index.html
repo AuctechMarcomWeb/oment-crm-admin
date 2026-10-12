@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Oment — Super Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400..700;1,8..60,400..600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/tokens.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/layout.css">
+<link rel="stylesheet" href="assets/css/components.css">
+<link rel="stylesheet" href="assets/css/modules.css">
+<link rel="stylesheet" href="assets/css/responsive.css">
+<link rel="stylesheet" href="assets/css/help.css">
+<link rel="stylesheet" href="../shared/ios-theme.css">   <!-- iOS theme layer — remove this line to restore the original look -->
+</head>
+<body>
+<a href="#content" class="skip-link">Skip to main content</a>
+<!-- SIDEBAR -->
+<aside id="sidebar">
+  <div class="sidebar-top">
+    <div class="logo-row">
+      <div class="logo-mark">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <rect x="7" y="1" width="4" height="16" rx="1" fill="white"/>
+          <rect x="1" y="7" width="16" height="4" rx="1" fill="white"/>
+        </svg>
+      </div>
+      <div class="logo-wordmark">Oment</div>
+    </div>
+    <div class="admin-pill" onclick="openMyProfile()" style="cursor:pointer" title="My account">
+      <div class="avatar" style="background:#2563EB" id="sidebar-avatar">RK</div>
+      <div class="admin-info">
+        <div class="admin-name" id="sidebar-name">Rajesh Kumar</div>
+        <div class="admin-role">Super Admin</div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-item active" data-nav="dashboard" onclick="gotoModule('dashboard')">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.8"/></svg>
+      Dashboard
+    </div>
+    <div class="nav-item" data-nav="launcher" onclick="openLauncher()">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><circle cx="5" cy="5" r="1.5" fill="currentColor"/><circle cx="12" cy="5" r="1.5" fill="currentColor"/><circle cx="19" cy="5" r="1.5" fill="currentColor"/><circle cx="5" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="19" cy="12" r="1.5" fill="currentColor"/><circle cx="5" cy="19" r="1.5" fill="currentColor"/><circle cx="12" cy="19" r="1.5" fill="currentColor"/><circle cx="19" cy="19" r="1.5" fill="currentColor"/></svg>
+      App Launcher
+    </div>
+    <div class="nav-item" data-nav="messages" onclick="gotoModule('messages')">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Messages
+      <span class="nav-badge" id="msg-badge" style="display:none">0</span>
+    </div>
+    <div class="nav-item" data-nav="calendar" onclick="gotoModule('calendar')">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.8"/><line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="1.8"/></svg>
+      Calendar
+    </div>
+    <div class="nav-item" data-nav="analytics" onclick="gotoModule('analytics')">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="12" y1="20" x2="12" y2="4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="6" y1="20" x2="6" y2="14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      Analytics
+    </div>
+    <div class="nav-item" data-nav="settings" onclick="gotoModule('settings')">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="currentColor" stroke-width="1.8"/></svg>
+      Settings
+    </div>
+  </nav>
+
+  <div class="sidebar-bottom">
+    <button class="logout-btn" onclick="showConfirm('Log out of Oment?', () => toast('Logged out', 'success'))">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="16 17 21 12 16 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Log Out
+    </button>
+  </div>
+</aside>
+
+<!-- MOBILE OVERLAY -->
+<div id="mobile-overlay" onclick="closeSidebar()"></div>
+
+<!-- MAIN -->
+<div id="main">
+  <!-- TOPBAR -->
+  <div id="topbar">
+    <div class="hamburger" onclick="openSidebar()">
+      <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </div>
+    <button class="topbar-back" id="topbar-back" onclick="goBack()" title="Go back" style="display:none">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M19 12H5M5 12l7-7M5 12l7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="topbar-back-label">Back</span>
+    </button>
+    <div class="topbar-title" id="topbar-title">Dashboard</div>
+    <div class="topbar-search">
+      <span class="search-icon"><svg width="13" height="13" fill="none" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><path d="m21 21-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+      <input type="text" placeholder="Search employees, projects, invoices…" id="global-search">
+    </div>
+    <div class="topbar-right">
+      <div class="icon-btn" style="position:relative" onclick="toggleNotif()">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="notif-badge" id="notif-badge"></div>
+        <div class="notif-dropdown" id="notif-dropdown">
+          <div class="notif-dropdown-header">
+            <span class="notif-dropdown-title">Notifications</span>
+            <span class="link-btn" onclick="markAllRead()">Mark all read</span>
+          </div>
+          <div id="notif-list"></div>
+        </div>
+      </div>
+      <div class="avatar avatar-sm" style="background:#2563EB;cursor:pointer" id="topbar-avatar" onclick="openMyProfile()" title="My account">RK</div>
+    </div>
+  </div>
+
+  <!-- CONTENT AREA -->
+  <div id="content">
+    <!-- DASHBOARD VIEW -->
+    <div class="view active" id="view-dashboard"></div>
+
+    <!-- DEPARTMENTS VIEW -->
+    <div class="view" id="view-departments"></div>
+
+    <!-- EMPLOYEES VIEW -->
+    <div class="view" id="view-employees"></div>
+
+    <!-- PROJECTS VIEW -->
+    <div class="view" id="view-projects"></div>
+
+    <!-- PROJECT DETAIL VIEW -->
+    <div class="view" id="view-project-detail"></div>
+
+    <!-- INVOICES VIEW -->
+     <div class="view" id="view-invoices"></div>
+
+    <!-- LEADS VIEW -->
+
+    <!-- MESSAGES VIEW -->
+    <div class="view" id="view-messages"></div>
+
+    <!-- SETTINGS VIEW -->
+
+    <!-- PEOPLE / HRM VIEW -->
+    <div class="view" id="view-hrm"></div>
+
+    <!-- PROFITABILITY VIEW -->
+    <div class="view" id="view-profit"></div>
+
+    <!-- PAYOUTS VIEW -->
+    <div class="view" id="view-payouts"></div>
+
+    <!-- PENALTIES VIEW -->
+    <div class="view" id="view-penalties"></div>
+
+    <!-- HELP VIEW -->
+    <div class="view" id="view-help"></div>
+
+
+
+    <div class="view" id="view-settings"></div>
+
+    <!-- CALENDAR VIEW -->
+    <div class="view" id="view-calendar"></div>
+
+    <!-- NOTICES VIEW -->
+    <div class="view" id="view-notices"></div>
+
+    <!-- CALLING VIEW -->
+    <div class="view" id="view-calling"></div>
+
+    <!-- AREEN AI VIEW -->
+    <div class="view" id="view-een"></div>
+
+    <!-- ANALYTICS VIEW -->
+    <div class="view" id="view-analytics"></div>
+
+  </div>
+</div>
+
+<!-- APP LAUNCHER OVERLAY -->
+<div id="app-launcher" onclick="closeLauncher(event)">
+  <div class="launcher-box">
+    <div class="launcher-header">
+      <div>
+        <div class="launcher-title">App Launcher</div>
+        <div class="launcher-subtitle">Quick access to all modules</div>
+      </div>
+      <button class="icon-btn" onclick="closeLauncher()" style="flex-shrink:0">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="launcher-search">
+      <input type="text" placeholder="Search modules…" oninput="launcherSearch(this.value)" id="launcher-search-input">
+    </div>
+    <div class="launcher-grid" id="launcher-grid">
+      <div class="app-card" onclick="launchApp('departments')"><div class="app-icon" style="background:var(--blue-light);color:var(--blue)"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><polyline points="2 17 12 22 22 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="2 12 12 17 22 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="app-name">Departments</div><div class="app-desc">Manage teams &amp; structure</div></div>
+      <div class="app-card" onclick="launchApp('employees')"><div class="app-icon" style="background:#F5F3FF;color:#7C3AED"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="app-name">Employees</div><div class="app-desc">Staff directory &amp; profiles</div></div>
+      <div class="app-card" onclick="launchApp('hrm')"><div class="app-icon" style="background:var(--green-light);color:var(--green)"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="9" cy="15" r="1.2" fill="currentColor"/><circle cx="15" cy="15" r="1.2" fill="currentColor"/></svg></div><div class="app-name">People</div><div class="app-desc">Attendance, leave &amp; capacity</div></div>
+      <div class="app-card" onclick="launchApp('profit')"><div class="app-icon" style="background:var(--amber-light);color:var(--amber)"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M12 2v20M17 6H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div><div class="app-name">Profitability</div><div class="app-desc">Project margins &amp; cost</div></div>
+      <div class="app-card" onclick="launchApp('payouts')"><div class="app-icon" style="background:var(--green-light);color:var(--green)"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M2 10h20M16 15h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div><div class="app-name">Payouts</div><div class="app-desc">Task-wise pay, slabs &amp; disputes</div></div>
+      <div class="app-card" onclick="launchApp('penalties')"><div class="app-icon" style="background:#FEF2F2;color:#DC2626"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M12 3 21 6.5v5.7c0 4.8-3.2 7.8-9 9.8-5.8-2-9-5-9-9.8V6.5L12 3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 8v5M12 16h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div><div class="app-name">Penalties</div><div class="app-desc">Rules, deductions &amp; penalty history</div></div>
+      <div class="app-card" onclick="launchApp('help')"><div class="app-icon" style="background:var(--s3);color:var(--t2)"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5" stroke="currentColor" stroke-width="1.8"/><path d="M9.5 9.2a2.6 2.6 0 015 .9c0 1.7-2.5 2.1-2.5 3.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="17" r="1.1" fill="currentColor"/></svg></div><div class="app-name">Help</div><div class="app-desc">What every number means</div></div>
+      <div class="app-card" onclick="launchApp('projects')"><div class="app-icon" style="background:var(--green-light);color:var(--green)"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="app-name">Projects</div><div class="app-desc">Client project tracking</div></div>
+      <div class="app-card" onclick="launchApp('invoices')"><div class="app-icon" style="background:var(--amber-light);color:var(--amber)"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="8" y1="13" x2="16" y2="13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="8" y1="17" x2="13" y2="17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div><div class="app-name">Books</div><div class="app-desc">Invoices, payments &amp; recurring billing</div></div>
+      <div class="app-card" onclick="launchApp('calendar')"><div class="app-icon" style="background:var(--blue-light);color:var(--blue)"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.8"/><line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="1.8"/></svg></div><div class="app-name">Calendar</div><div class="app-desc">Events &amp; reminders</div></div>
+      <div class="app-card" onclick="launchApp('notices')"><div class="app-icon" style="background:#FFF1E7;color:#EA580C"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M19 4H5a2 2 0 00-2 2v12a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2z" stroke="currentColor" stroke-width="1.8"/><polyline points="3 8 12 14 21 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="app-name">Notice Board</div><div class="app-desc">Team announcements</div></div>
+      <div class="app-card" onclick="launchApp('calling')"><div class="app-icon" style="background:var(--green-light);color:var(--green)"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="app-name">Calling <span style="font-size:9px;background:var(--amber-light);color:var(--amber);padding:1px 6px;border-radius:99px;vertical-align:middle;font-weight:700">SOON</span></div><div class="app-desc">Available once Twilio / Exotel is connected</div></div>
+      <div class="app-card" onclick="launchApp('een')"><div class="app-icon" style="background:linear-gradient(135deg,#7C3AED,#2563EB);color:#fff"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M12 3l2 6.5 6.5 2-6.5 2L12 20l-2-6.5L3.5 11.5 10 9.5 12 3z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="app-name">Ask Een AI</div><div class="app-desc">Your CRM intelligence</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE-IN PANEL -->
+<div id="panel-overlay" onclick="closePanel()"></div>
+<div id="slide-panel">
+  <div class="panel-header">
+    <div class="panel-title" id="panel-title">Panel</div>
+    <button class="icon-btn" onclick="closePanel()">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+  <div class="panel-body" id="panel-body"></div>
+  <div class="panel-footer" id="panel-footer"></div>
+</div>
+
+<!-- MODAL -->
+<div id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Modal</div>
+      <button class="icon-btn" onclick="closeModal()">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer" id="modal-footer"></div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div id="toast-container"></div>
+
+<!-- MOBILE BOTTOM NAV -->
+<!-- CONFIRM DIALOG -->
+<div id="confirm-overlay" style="position:fixed;inset:0;background:rgba(24,23,26,0.5);backdrop-filter:blur(4px);z-index:3000;display:none;align-items:center;justify-content:center">
+  <div style="background:var(--surface);border-radius:var(--r16);padding:24px;width:340px;max-width:calc(100vw - 32px);box-shadow:var(--sh2)">
+    <div style="font-size:15px;font-weight:700;color:var(--t1);margin-bottom:8px" id="confirm-msg"></div>
+    <div style="font-size:13px;color:var(--t3);margin-bottom:20px">This action cannot be undone.</div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="closeConfirm()">Cancel</button>
+      <button class="btn btn-danger" id="confirm-yes-btn">Confirm</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- Shared layer — dono apps ka ek data model -->
+
+<script src="../config.js"></script>
+<script src="../shared/schema.js"></script>
+<script src="../shared/utils.js"></script>
+<script src="../shared/notify-pop.js"></script>
+<script src="../shared/seed.js"></script>
+<!-- Server se data (shared/data.js, hrm.js, wallet.js, profitability.js ki jagah) -->
+<script src="../adapter/data-api-http.js"></script>
+<script src="../shared/glossary.js"></script>
+<script src="../shared/guides.js"></script>
+<script src="../shared/een-signals.js"></script>
+<script src="../shared/een-brain.js"></script>
+<script src="../shared/integrations/crm.js"></script>
+
+<script src="assets/js/state.js"></script>
+<script src="assets/js/core.js"></script>
+<script src="assets/js/views.js"></script>
+<script src="assets/js/dashboard.js"></script>
+<script src="assets/js/links.js"></script>
+<script src="assets/js/departments.js"></script>
+<script src="assets/js/employees.js"></script>
+<script src="assets/js/hrm.js"></script>
+<script src="assets/js/profitability.js"></script>
+<script src="assets/js/payouts.js"></script>
+<script src="assets/js/penalties.js"></script>
+<script src="assets/js/projects.js"></script>
+<script src="assets/js/milestones.js"></script>
+<script src="assets/js/deliverables.js"></script>
+<script src="assets/js/subtasks.js"></script>
+<script src="assets/js/invoices.js"></script>
+<script src="assets/js/messages.js"></script>
+<script src="assets/js/calendar.js"></script>
+<script src="assets/js/notices.js"></script>
+<script src="assets/js/calling.js"></script>
+<script src="assets/js/een.js"></script>
+<script src="assets/js/analytics.js"></script>
+<script src="assets/js/settings.js"></script>
+<script src="assets/js/help.js"></script>
+<script src="assets/js/init.js"></script>
+<script src="../adapter/backend-mode.js"></script>
+</body>
+</html>

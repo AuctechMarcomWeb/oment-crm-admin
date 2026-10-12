@@ -1,0 +1,309 @@
+/* ============================================================================
+   EMPLOYEE WORKSPACE — THEME
+   Loaded last. Only changes the look: no layout logic, no JavaScript.
+   Remove the <link href="css/theme.css"> line in index.html to go back.
+
+   Palette
+     paper  #F5F6F8   page background
+     ink    #151922   text, active-task card
+     slate  #596173   secondary text
+     line   #E2E5EB   borders
+     teal   #0E7C72   "time is running / on duty"
+     amber  #B45309   waiting, pending
+     red    #C42B2B   late, over, sent back
+   Type
+     Manrope         everything in the interface
+     IBM Plex Mono   clocks, durations and money only
+   ============================================================================ */
+
+:root {
+  --font: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+
+  --bg: #F5F6F8; --sur: #FFFFFF; --surface: #FFFFFF;
+  --s2: #F1F3F6; --s3: #E8EBF0; --s4: #DADEE5;
+  --b: #E2E5EB; --b1: #E2E5EB; --b2: #D3D8E0; --b3: #BCC3CE;
+  --t1: #151922; --t2: #454B59; --t3: #6E7584; --t4: #A2A8B4;
+
+  --teal: #0E7C72; --teal-d: #0A5F57; --teal-l: #E3F3F1;
+  --blue: #2F5BD3; --bl: #ECF1FD; --blc: #22449F;
+  --green: #0E7C72; --gl: #E3F3F1; --glc: #0A5F57;
+  --amber: #B45309; --al: #FDF3E4; --alc: #8A3F06;
+  --red: #C42B2B; --rl: #FCEDED; --rlc: #9B1F1F;
+  --purple: #6B46C1; --pl: #F1ECFB; --plc: #4F3392;
+
+  --r1: 6px; --r2: 8px; --r3: 10px; --r4: 14px; --r5: 18px;
+  --sh0: 0 1px 2px rgba(21, 25, 34, .05);
+  --sh1: 0 1px 2px rgba(21, 25, 34, .05), 0 2px 8px rgba(21, 25, 34, .04);
+  --sh2: 0 8px 24px rgba(21, 25, 34, .08);
+  --sh3: 0 18px 48px rgba(21, 25, 34, .16);
+  --sw: 248px;
+}
+
+/* ── base ───────────────────────────────────────────────────────────────── */
+html, body { background: var(--bg) !important; }
+body, input, select, textarea, button { font-family: var(--font) !important; }
+body { color: var(--t1); font-size: 14px; line-height: 1.55; letter-spacing: -.005em; }
+h1, h2, h3, .stitle, .dh-t, .lh, .fc-t { font-family: var(--font) !important; letter-spacing: -.02em; }
+::selection { background: var(--teal-l); color: var(--teal-d); }
+:focus-visible { outline: 2px solid var(--teal) !important; outline-offset: 2px; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: #D3D8E0; border-radius: 8px; border: 2px solid var(--bg); }
+
+/* numbers that are times or money */
+.sv, .fc-timer, .fc-cc-v, .wp-tm, #duty-tm, .wl-amt, .wl-hero-v, .dm-v, #det-timer, #tb-time, .tm, .mono { font-family: var(--mono) !important; font-variant-numeric: tabular-nums; }
+
+/* ── page area ──────────────────────────────────────────────────────────── */
+.view { padding: 28px 36px 40px !important; }
+.view > * { max-width: 1280px; }
+.shd { margin-bottom: 18px; }
+.stitle { font-size: 24px !important; font-weight: 800 !important; color: var(--t1); }
+.ssub { font-size: 13.5px !important; color: var(--t3) !important; margin-top: 4px; }
+
+/* ── sidebar ────────────────────────────────────────────────────────────── */
+.sb { background: #FFFFFF !important; border-right: 1px solid var(--b) !important; width: var(--sw) !important; box-shadow: none !important; }
+.sb-top { padding: 18px 16px 12px !important; border-bottom: 0 !important; }
+.sb-brand { gap: 10px !important; margin-bottom: 14px !important; }
+.sb-mark { width: 30px !important; height: 30px !important; border-radius: 9px !important; background: var(--t1) !important; }
+.sb-wname { font-size: 16px !important; font-weight: 800 !important; letter-spacing: -.02em; }
+.sb-user { background: var(--s2) !important; border: 0 !important; border-radius: 12px !important; padding: 10px 12px !important; }
+.sb-av, .sb-bot-av, .mob-av { border-radius: 10px !important; font-weight: 700 !important; }
+.sb-uname { font-size: 14px !important; font-weight: 700 !important; }
+.sb-urole { font-size: 12px !important; color: var(--t3) !important; }
+
+/* duty Log in / Log out — a calm control, not a giant red slab */
+#duty-box { margin: 4px 16px 10px !important; }
+#duty-box button {
+  height: 42px !important; padding: 0 14px !important; border-radius: 11px !important;
+  font-size: 14px !important; font-weight: 700 !important; letter-spacing: -.01em;
+  box-shadow: none !important; transition: background .15s ease, transform .1s ease;
+}
+#duty-box button:active { transform: scale(.98); }
+#duty-box button[onclick^="dutyLogin"] { background: var(--teal) !important; }
+#duty-box button[onclick^="dutyLogin"]:hover { background: var(--teal-d) !important; }
+#duty-box button[onclick^="dutyLogout"] { background: #FFFFFF !important; color: var(--red) !important; border: 1.5px solid #EBC3C3 !important; }
+#duty-box button[onclick^="dutyLogout"]:hover { background: var(--rl) !important; border-color: var(--red) !important; }
+#duty-box > div { font-size: 12px !important; margin-top: 7px !important; padding: 0 2px !important; color: var(--t3); }
+#duty-tm { color: var(--teal) !important; font-size: 13px !important; }
+
+/* work status + today's time */
+.wp { margin: 0 16px 8px !important; background: var(--s2) !important; border: 0 !important; border-radius: 11px !important; padding: 10px 12px !important; }
+.wp-lbl { font-size: 13px !important; font-weight: 600 !important; color: var(--t2) !important; }
+.wp-tm { font-size: 13px !important; color: var(--t1) !important; }
+.wp-dot { width: 8px !important; height: 8px !important; }
+.att-chip { margin: 0 16px 8px !important; background: transparent !important; border: 1px solid var(--b) !important; border-radius: 11px !important; padding: 9px 12px !important; }
+.att-chip:hover { border-color: var(--b3) !important; }
+#brk-btn { margin: 0 16px 10px !important; width: calc(100% - 32px) !important; border-radius: 11px !important; background: var(--al) !important; color: var(--alc) !important; border: 0 !important; font-weight: 600 !important; }
+
+/* navigation */
+.sb-nav { padding: 6px 10px 12px !important; border-top: 1px solid var(--b); margin-top: 4px; }
+.ni {
+  height: 40px; padding: 0 12px !important; margin: 2px 0 !important; border-radius: 10px !important;
+  font-size: 14px !important; font-weight: 600 !important; color: var(--t2) !important;
+  background: transparent !important; box-shadow: none !important; gap: 12px !important;
+}
+.ni svg { width: 18px !important; height: 18px !important; stroke-width: 1.8 !important; color: var(--t3); }
+.ni:hover { background: var(--s2) !important; color: var(--t1) !important; }
+.ni.on { background: #007AFF !important; color: #FFFFFF !important; box-shadow: 0 4px 14px rgba(0, 122, 255, .30) !important; }   /* same as the admin menu */
+.ni.on svg { color: #FFFFFF !important; stroke: #FFFFFF !important; }
+.nbadge, .nb-red { min-width: 20px !important; height: 20px !important; border-radius: 99px !important; font-size: 11px !important; font-weight: 700 !important; background: var(--red) !important; box-shadow: none !important; }
+.ni.on .nbadge { background: #FFFFFF !important; color: #007AFF !important; }
+.sb-bot { border-top: 1px solid var(--b) !important; padding: 12px 16px !important; background: #FFFFFF !important; }
+
+/* ── page guide (blue help box) — lighter, closable, not shouting ───────── */
+.page-guide { background: #FFFFFF !important; border: 1px solid var(--b) !important; border-left: 3px solid var(--teal) !important; border-radius: 12px !important; box-shadow: none !important; padding: 14px 18px !important; }
+.page-guide-head, .page-guide-what { color: var(--t1) !important; font-size: 14px !important; font-weight: 700 !important; }
+.page-guide-icon { background: var(--teal) !important; }
+.page-guide-steps li, .page-guide-steps { color: var(--t2) !important; font-size: 13.5px !important; }
+.page-guide-steps li::marker { color: var(--teal); }
+
+/* ── cards ──────────────────────────────────────────────────────────────── */
+.card, .scard, .pbox, .ec, .dm, .wl-sec, .lcard {
+  background: #FFFFFF !important; border: 1px solid var(--b) !important; border-radius: var(--r4) !important; box-shadow: var(--sh0) !important;
+}
+.card { padding: 20px 22px; }
+.sbar { gap: 14px !important; margin-bottom: 22px !important; }
+.scard { padding: 16px 18px !important; }
+.sl { text-transform: none !important; letter-spacing: 0 !important; font-size: 13px !important; font-weight: 600 !important; color: var(--t3) !important; margin-bottom: 8px !important; }
+.sv { font-size: 28px !important; font-weight: 600 !important; letter-spacing: -.03em !important; }
+.ss { font-size: 12.5px !important; color: var(--t3) !important; margin-top: 4px; }
+
+/* small uppercase eyebrows used across pages → sentence case */
+.fc-ey, .fc-cc-l, .dm-l, .fl, .wl-hero-l, .tl-s { text-transform: none !important; letter-spacing: 0 !important; }
+
+/* ── active task card (Dashboard) ──────────────────────────────────────
+   Light card, teal edge while on time, red edge once over the estimate.
+   Top: status, title, deadline, buttons. Bottom: clock, numbers, progress. */
+.atc {
+  background: #FFFFFF; border: 1px solid var(--b); border-left: 4px solid var(--teal);
+  border-radius: 16px; padding: 20px 24px 18px; margin-bottom: 18px; box-shadow: var(--sh1);
+}
+.atc.over { border-left-color: var(--red); }
+.atc-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+.atc-head { min-width: 0; flex: 1; }
+.atc-status { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 13px; font-weight: 700; color: var(--teal); margin-bottom: 6px; }
+.atc-status.pause { color: var(--amber); }
+.atc-status.brk { color: var(--blue); }
+.atc-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.atc-status.run .atc-dot { box-shadow: 0 0 0 4px var(--teal-l); animation: atcPulse 2s ease-in-out infinite; }
+@keyframes atcPulse { 50% { box-shadow: 0 0 0 7px rgba(14, 124, 114, .08); } }
+.atc-where { color: var(--t3); font-weight: 600; }
+.atc-tag { background: var(--pl); color: var(--plc); font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 99px; }
+.atc-title { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; font-size: 21px; font-weight: 800; letter-spacing: -.02em; line-height: 1.3; color: var(--t1); }
+.atc-due { font-size: 12px !important; font-weight: 700 !important; padding: 3px 10px !important; border-radius: 99px !important; letter-spacing: 0; }
+.atc-desc { margin-top: 6px; font-size: 13.5px; color: var(--t3); max-width: 70ch; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.atc-acts { display: flex; gap: 8px; flex-shrink: 0; }
+.atc-btn {
+  height: 40px; padding: 0 16px; border-radius: 10px; border: 1px solid var(--b2); background: #FFFFFF;
+  color: var(--t1); font: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer; white-space: nowrap;
+}
+.atc-btn:hover { background: var(--s2); }
+.atc-btn.primary { background: var(--teal); border-color: var(--teal); color: #FFFFFF; }
+.atc-btn.primary:hover { background: var(--teal-d); }
+
+.atc-time { display: flex; align-items: flex-end; gap: 36px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--b); flex-wrap: wrap; }
+.atc .fc-timer { font-family: var(--mono) !important; font-size: 44px !important; font-weight: 500 !important; letter-spacing: -.03em !important; line-height: 1 !important; color: var(--t1) !important; margin: 0 !important; }
+.atc.over .fc-timer { color: var(--red) !important; }
+.atc .fc-compare { display: flex; gap: 32px; margin: 0 !important; padding: 0 !important; background: none !important; border: 0 !important; }
+.atc .fc-cc { display: flex; flex-direction: column; gap: 3px; }
+.atc .fc-cc-l { font-size: 12.5px !important; color: var(--t3) !important; opacity: 1 !important; text-transform: none !important; letter-spacing: 0 !important; font-weight: 600; }
+.atc .fc-cc-v { font-family: var(--mono) !important; font-size: 17px !important; font-weight: 600 !important; color: var(--t1); white-space: nowrap; }
+.atc .fc-cc-v.un { color: var(--teal) !important; }
+.atc .fc-cc-v.ov { color: var(--red) !important; }
+.atc-bar { height: 6px; background: var(--s3); border-radius: 99px; overflow: hidden; margin-top: 16px; }
+.atc-bar > div { height: 100%; background: var(--teal); border-radius: 99px; transition: width .6s ease; }
+.atc.over .atc-bar > div { background: var(--red); }
+.atc-hint { font-size: 12.5px; color: var(--t3); margin-top: 7px; }
+
+@media (max-width: 760px) {
+  .atc { padding: 16px; }
+  .atc-top { flex-direction: column; gap: 14px; }
+  .atc-acts { width: 100%; }
+  .atc-acts .atc-btn { flex: 1; padding: 0 8px; }
+  .atc-title { font-size: 18px; }
+  .atc-time { gap: 14px; }
+  .atc .fc-timer { font-size: 36px !important; }
+  .atc .fc-compare { gap: 20px; width: 100%; justify-content: space-between; }
+}
+
+/* ── buttons ────────────────────────────────────────────────────────────── */
+.btn { border-radius: 10px !important; font-weight: 700 !important; letter-spacing: -.005em; box-shadow: none !important; white-space: nowrap; }
+.btn-solid { background: var(--t1) !important; color: #FFFFFF !important; }
+.btn-blue { background: var(--blue) !important; }
+.btn-green { background: var(--teal) !important; color: #FFFFFF !important; }
+.btn-green:hover { background: var(--teal-d) !important; }
+.btn-purple { background: var(--purple) !important; color: #FFFFFF !important; }
+.btn-ghost { background: var(--s2) !important; color: var(--t1) !important; border: 1px solid transparent !important; }
+.btn-ghost:hover { border-color: var(--b2) !important; }
+.btn-red { background: var(--red) !important; }
+
+/* ── badges / status pills ──────────────────────────────────────────────── */
+.badge, .b-hi, .b-todo, .b-self, .u-ok, .u-urg, .u-wrn { border-radius: 99px !important; font-weight: 600 !important; font-size: 11.5px !important; padding: 3px 9px !important; }
+.u-urg { background: var(--rl) !important; color: var(--rlc) !important; }
+.u-wrn { background: var(--al) !important; color: var(--alc) !important; }
+.u-ok  { background: var(--teal-l) !important; color: var(--teal-d) !important; }
+
+/* ── tabs and filters ───────────────────────────────────────────────────── */
+.tabs, .tbar { background: var(--s3) !important; border-radius: 12px !important; padding: 4px !important; gap: 2px !important; border: 0 !important; }
+.tab, .tbtn { border-radius: 9px !important; font-weight: 600 !important; font-size: 13px !important; color: var(--t2) !important; padding: 7px 14px !important; border: 0 !important; background: transparent !important; }
+.tab.on, .tbtn.on, .tab.active, .tbtn.active { background: #FFFFFF !important; color: var(--t1) !important; box-shadow: var(--sh0) !important; }
+
+/* ── task rows (Task Tracker, Projects, focus queue) ───────────────────── */
+.tr {
+  background: #FFFFFF !important; border: 1px solid var(--b) !important; border-radius: 12px !important;
+  padding: 14px 16px !important; margin-bottom: 8px !important; box-shadow: none !important;
+  transition: border-color .15s ease;
+}
+.tr:hover { border-color: var(--b3) !important; }
+.tr-t { font-size: 14.5px !important; font-weight: 700 !important; }
+.tr-m { gap: 6px !important; }
+/* state shows as a coloured left edge, not a full coloured outline */
+.tr.rrow { background: #FFFFFF !important; border-color: var(--b) !important; border-left: 3px solid var(--red) !important; box-shadow: none !important; }
+.tr.arow { background: #FFFFFF !important; border-color: var(--b) !important; border-left: 3px solid var(--teal) !important; box-shadow: none !important; }
+.tr[style*="border-left:3px solid var(--purple)"] { border-left: 3px solid var(--purple) !important; }
+.tr[style*="border-left:3px solid"] { border-radius: 12px !important; }
+.tr.rrow .fq-n { background: var(--red) !important; }
+.tr.arow .fq-n { background: var(--teal) !important; }
+
+/* small all-caps group headings written inline in the pages → sentence case */
+.view [style*="text-transform:uppercase"] { text-transform: none !important; letter-spacing: 0 !important; font-size: 12.5px !important; }
+.fq-n { background: var(--t1) !important; color: #FFFFFF !important; font-family: var(--mono) !important; font-weight: 600 !important; }
+.rej-b { background: var(--rl) !important; border: 1px solid #F0CACA !important; border-radius: 12px !important; }
+.sub-b { background: var(--pl) !important; border: 0 !important; border-radius: 12px !important; }
+
+/* ── forms ──────────────────────────────────────────────────────────────── */
+.fin, .fta, .fselect, input[type="text"], input[type="search"], input[type="number"], input[type="date"], input[type="time"], textarea, select {
+  background: #FFFFFF !important; border: 1px solid var(--b2) !important; border-radius: 10px !important; color: var(--t1) !important;
+}
+.fin:focus, .fta:focus, .fselect:focus, input:focus, textarea:focus, select:focus { border-color: var(--teal) !important; box-shadow: 0 0 0 3px var(--teal-l) !important; outline: none !important; }
+.fl { font-size: 13px !important; font-weight: 600 !important; color: var(--t2) !important; }
+
+/* ── tables ─────────────────────────────────────────────────────────────── */
+table { border-collapse: separate !important; border-spacing: 0; }
+th { background: transparent !important; color: var(--t3) !important; font-size: 12.5px !important; font-weight: 600 !important; text-transform: none !important; letter-spacing: 0 !important; border-bottom: 1px solid var(--b) !important; }
+td { border-bottom: 1px solid var(--b) !important; }
+tr:last-child td { border-bottom: 0 !important; }
+
+/* attendance ring: the small "% of 8h goal" line fits inside the ring */
+#att-body svg text { font-family: var(--font) !important; }
+#att-body svg text[font-family="monospace"][font-size="20"] { font-family: var(--mono) !important; font-weight: 600 !important; }
+#att-body svg text[font-size="12"] { font-size: 10px !important; font-weight: 700 !important; }
+
+/* ── progress ───────────────────────────────────────────────────────────── */
+.prog { background: var(--s3) !important; border-radius: 99px !important; height: 6px !important; }
+.prog-f { background: var(--teal) !important; border-radius: 99px !important; }
+
+/* ── dialogs, modals, toasts ───────────────────────────────────────────── */
+.mod, .dlg { border-radius: 18px !important; box-shadow: var(--sh3) !important; border: 0 !important; }
+.mod-t, .dlg-t { font-size: 18px !important; font-weight: 800 !important; letter-spacing: -.02em; }
+#mod-ov, #dlg-ov { background: rgba(21, 25, 34, .42) !important; backdrop-filter: blur(3px); }
+.toast { background: var(--t1) !important; color: #FFFFFF !important; border-radius: 12px !important; font-weight: 600 !important; box-shadow: var(--sh2) !important; }
+
+/* floating task bar (other pages) */
+#task-bar { background: var(--t1) !important; border-radius: 16px !important; box-shadow: var(--sh3) !important; border: 0 !important; }
+#task-bar.tb-top { top: 14px !important; bottom: auto !important; }
+#task-bar .tb-done { background: #3DD6C4 !important; color: #08332F !important; }
+
+/* ── login screen ───────────────────────────────────────────────────────── */
+#s-login { background: radial-gradient(1200px 600px at 50% -10%, #E3F3F1 0%, var(--bg) 55%) !important; }
+.lcard { border-radius: 20px !important; padding: 26px !important; box-shadow: var(--sh2) !important; }
+.lh { font-size: 22px !important; font-weight: 800 !important; }
+.lmark { background: var(--t1) !important; border-radius: 10px !important; }
+.ep-item { border-radius: 12px !important; }
+.ep-item:hover { background: var(--s2) !important; }
+
+/* ── mobile ─────────────────────────────────────────────────────────────── */
+.mob-top { background: #FFFFFF !important; border-bottom: 1px solid var(--b) !important; }
+.mob-brand { font-weight: 800 !important; letter-spacing: -.02em; }
+/* phones: the top bar sits above the page (it used to push the page off-screen,
+   which left the screen blank) */
+@media (max-width: 640px) {
+  #s-app { flex-direction: column !important; }
+  #s-app > .main { flex: 1 1 auto !important; width: 100% !important; height: auto !important; min-height: 0 !important; }
+  #v-dashboard .sbar { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 8px !important; }
+  #v-dashboard .scard { padding: 12px !important; }
+  #v-dashboard .sl { font-size: 12px !important; margin-bottom: 4px !important; }
+  #v-dashboard .sv { font-size: 20px !important; }
+
+  /* task rows: title first, full width; buttons wrap underneath */
+  .tr { flex-wrap: wrap !important; align-items: flex-start !important; row-gap: 10px !important; }
+  .tr > .tr-info { flex: 1 1 calc(100% - 40px) !important; min-width: 0 !important; }
+  .tr > .tr-r { flex: 1 1 100% !important; justify-content: flex-start !important; flex-wrap: wrap !important; gap: 6px !important; margin-left: 0 !important; }
+  .tr-t { white-space: normal !important; }
+
+  /* filter tabs scroll sideways instead of wrapping into three rows */
+  .tbar, .tabs { flex-wrap: nowrap !important; overflow-x: auto !important; scrollbar-width: none; }
+  .tbar::-webkit-scrollbar, .tabs::-webkit-scrollbar { display: none; }
+  .tbtn, .tab { flex: 0 0 auto !important; white-space: nowrap !important; }
+
+  /* floating task bar sits above the bottom navigation */
+  #task-bar { left: 10px !important; right: 10px !important; bottom: 66px !important; max-width: none !important; }
+}
+@media (max-width: 860px) {
+  .view { padding: 18px 16px 90px !important; }
+  .stitle { font-size: 20px !important; }
+  .sv { font-size: 22px !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
