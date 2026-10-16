@@ -83,7 +83,7 @@
     return out;
   }
 
-  var DATA_METHODS = ['getSettings', 'updateSettings', 'getEmployees', 'getEmployee', 'createEmployee', 'updateEmployee', 'deleteEmployee',
+  var DATA_METHODS = ['getSettings', 'updateSettings', 'updateAdminProfile', 'getEmployees', 'getEmployee', 'createEmployee', 'updateEmployee', 'deleteEmployee',
     'getDepartments', 'createDepartment', 'updateDepartment', 'deleteDepartment',
     'getProjects', 'getProject', 'createProject', 'updateProject', 'deleteProject', 'addProjectMember', 'removeProjectMember',
     'getMilestones', 'createMilestone', 'updateMilestone', 'deleteMilestone',

@@ -1,4 +1,3 @@
-
 (function (root) {
   'use strict';
 
@@ -129,7 +128,7 @@
       steps: [
         'Enter the company name, address and GST number here',
         'Download all your data from the <b>Data</b> tab',
-        'If something goes wrong, restore the demo from there'
+        'Change your name and password in <b>My account</b>'
       ]
     },
     help: {

@@ -560,7 +560,7 @@ function renderRecurringCard() {
   const mrr = active.reduce((s, p) => s + amount(p) * (perMonth[p.frequency] || 0), 0);
   const upcoming = active.slice().sort((a, b) => String(a.nextDate).localeCompare(String(b.nextDate))).slice(0, 4);
   const made = (DataAPI.raw().invoices || []).filter(i => i.recurringId);
-  const due = made.filter(i => !['PAID', 'CANCELLED'].includes(i.status)).reduce((s, i) => s + (i.totalPaise - (i.paidPaise || 0)), 0);
+  const due = made.filter(i => !['PAID', 'CANCELLED', 'DRAFT'].includes(i.status)).reduce((s, i) => s + (i.totalPaise - (i.paidPaise || 0)), 0);
   const r = p => Utils.fmtRupee(Math.round(p)).replace('.00', '');
   const lab = { WEEKLY: 'weekly', MONTHLY: 'monthly', QUARTERLY: 'quarterly', YEARLY: 'yearly' };
   host.innerHTML = `<div class="card card-pad">
@@ -578,6 +578,16 @@ function renderRecurringCard() {
         <span style="flex:1;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.name || p.clientName)}</span>
         <span style="color:var(--t3)">${lab[p.frequency] || ''}</span>
         <span style="font-family:var(--mono);font-weight:600">${r(amount(p))}</span></div>`).join('')}` : ''}
+    ${(function () {
+      const soon = typeof pbUpcomingRenewals === 'function' ? pbUpcomingRenewals() : [];
+      if (!soon.length) return '';
+      return `<div style="font-size:11px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;margin:12px 0 6px">Contracts ending in the next 30 days</div>` +
+        soon.map(i => `<div class="dash-click" onclick="openProjectDetail(${i.p.id})" style="display:flex;align-items:center;gap:10px;padding:7px 6px;border-radius:var(--r6);font-size:13px">
+          <span style="font-family:var(--mono);color:var(--t3);min-width:92px">${esc(fmtDate(i.term.to))}</span>
+          <span style="flex:1;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(i.p.name)}</span>
+          <span class="badge ${i.r.autoRenew ? 'badge-green' : 'badge-amber'}">${i.r.autoRenew ? 'renews automatically' : 'ends \u2014 renew?'}</span>
+          <span style="font-family:var(--mono);font-weight:600">${r(i.r.amountPaise)}</span></div>`).join('');
+    })()}
   </div>`;
 }
 

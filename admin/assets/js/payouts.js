@@ -497,7 +497,9 @@ function poPayTeam(pane) {
     return '<div class="card card-pad" style="padding:14px 16px"><div style="font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;font-weight:600">' + l + '</div>' +
       '<div style="font-size:22px;font-weight:700;font-family:var(--mono);color:' + c + ';margin-top:2px">' + poRupee(v) + '</div><div style="font-size:12px;color:var(--t3)">' + sub + '</div></div>';
   };
-  var h = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:14px">' +
+  var h = '<div id="ps-wrap"></div>' +
+    '<div class="section-title" style="margin:6px 0 10px">All-time balance <span style="font-size:12px;font-weight:400;color:var(--t3)">\u2014 task, milestone and bonus pay in the ledger, since the start</span></div>' +
+    '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:14px">' +
     box('Earned by the team', tot.earned, 'var(--t1)', 'task pay, milestone pay, bonuses, direct payments') +
     box('Paid', tot.paid, 'var(--blue)', 'money you recorded as paid') +
     box('Still to pay', tot.remaining, tot.remaining > 0 ? 'var(--amber)' : 'var(--green)', tot.remaining > 0 ? 'owed to the team right now' : 'everyone is paid up') +
@@ -518,6 +520,7 @@ function poPayTeam(pane) {
     }).join('') + '</tbody></table></div>' +
     '<div style="font-size:12px;color:var(--t3);margin-top:10px">"Still to pay" = earned \u2212 paid. A negative figure means you paid in advance. Recorded a payment by mistake? Open History \u2192 Undo.</div>';
   pane.innerHTML = h;
+  if (typeof psRender === 'function') psRender();
 }
 
 function poPayHistory(empId) {

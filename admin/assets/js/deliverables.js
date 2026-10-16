@@ -178,7 +178,7 @@ function openDeliverableDetail(pid, taskId) {
       <div style="font-size:10.5px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Comments (${(t.messages||[]).length})</div>
       <div id="ddet-comments-list" style="margin-bottom:10px">${commentsHtml}</div>
       <div style="display:flex;gap:6px;align-items:flex-start">
-        <div class="avatar avatar-sm" style="background:var(--t1);flex-shrink:0">RK</div>
+        <div class="avatar avatar-sm" style="background:var(--t1);flex-shrink:0">${esc(_adminInitials())}</div>
         <input id="ddet-new-comment" type="text" placeholder="Write a comment…" class="form-input" style="flex:1;height:34px" onkeypress="if(event.key==='Enter')addCommentToDeliverable(${pid},${taskId})">
         <button class="btn btn-primary btn-sm" style="height:34px" onclick="addCommentToDeliverable(${pid},${taskId})">Post</button>
       </div>

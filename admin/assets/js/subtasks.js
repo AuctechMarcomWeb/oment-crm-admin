@@ -357,7 +357,7 @@ function saveSubtask(pid, deliverableId, subtaskId) {
       title, desc,
       assignee, assignees:[assignee],
       createdBy: null,                // null = admin
-      createdByName: 'Rajesh Kumar',
+      createdByName: _adminName(),
       priority, status,
       timeSpent, estimatedTime,
       createdAt: todayISO,

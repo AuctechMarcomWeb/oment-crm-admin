@@ -1,3 +1,13 @@
+/* the admin's name / initials, from the saved data (no fixed name) */
+function _adminName() { return (STATE.adminUser && STATE.adminUser.name) || 'Admin'; }
+function _adminInitials() {
+  const a = STATE.adminUser || {};
+  return a.avatarInitials || String(a.name || 'Admin').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+}
+function refreshAdminIdentity() {
+  const n = document.getElementById('sidebar-name'); if (n) n.textContent = _adminName();
+  ['sidebar-avatar', 'topbar-avatar'].forEach(id => { const e = document.getElementById(id); if (e) e.textContent = _adminInitials(); });
+}
 // var STATE = {
 //   currentModule: 'dashboard',
 //   currentProject: null,
@@ -560,6 +570,7 @@ function syncState() {
   STATE.company   = DB.company;
   STATE.adminUser = DB.adminUser;
   STATE.settings  = DB.settings;
+  if (typeof refreshAdminIdentity === 'function') refreshAdminIdentity();
 
   /* ── employees ── */
   STATE.employees = DB.employees.map(function (e) {
@@ -579,8 +590,12 @@ function syncState() {
       scoreDetail: scored,
       tasks: openTasks,
       joined: _fmtDay(e.joinedAt),
-      manager: empById[e.managerId] ? empById[e.managerId].name : '\u2014',
+      /* reporting manager; if none is set, the department head */
+      manager: empById[e.managerId] ? empById[e.managerId].name
+        : (deptById[e.deptId] && empById[deptById[e.deptId].headId] && deptById[e.deptId].headId !== e.id
+            ? empById[deptById[e.deptId].headId].name + ' (dept head)' : '\u2014'),
       managerId: e.managerId,
+      username: e.username,
       avatar: e.avatarInitials, color: e.color || e.avatarBg,
       accessLevel: e.accessLevel
     };

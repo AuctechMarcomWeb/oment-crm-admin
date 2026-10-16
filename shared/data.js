@@ -402,6 +402,15 @@
       return ok(clone(DB.settings));
     },
 
+    /* Admin's own display name (shown in the apps, emails and chats) */
+    updateAdminProfile: function (patch) {
+      var name = String((patch && patch.name) || '').trim().replace(/\s+/g, ' ');
+      if (name.length < 2 || name.length > 60) return fail('Enter a name between 2 and 60 characters', 'VALIDATION');
+      DB.adminUser.name = name;
+      DB.adminUser.avatarInitials = name.split(' ').map(function (w) { return w[0]; }).join('').slice(0, 2).toUpperCase();
+      return ok(clone(DB.adminUser));
+    },
+
     /* ── employees ─────────────────────────────────────────────────────── */
     authenticateEmployee: function (username, password) {
       username = String(username || '').toLowerCase().trim();
@@ -474,10 +483,23 @@
       });
       if (openWork.length)
         return fail(e.name + ' has ' + openWork.length + ' open deliverable(s). Reassign them first.', 'HAS_DEPENDENTS');
+      /* tasks still being worked on or waiting for review */
+      var openTasks = (DB.subtasks || []).filter(function (s) {
+        return Number(s.assigneeId) === Number(e.id) && /^(TODO|IN_PROGRESS|IN_REVIEW)$/.test(String(s.status || '').toUpperCase());
+      });
+      if (openTasks.length)
+        return fail(e.name + ' has ' + openTasks.length + ' open task(s). Reassign or close them first \u2014 or Deactivate instead.', 'HAS_DEPENDENTS');
+      /* a running timer is stopped (its time is kept) */
+      var openTimer = (DB.timeEntries || []).find(function (t) { return !t.endedAt && Number(t.employeeId) === Number(e.id); });
+      if (openTimer) DataAPI.stopTimer(e.id);
       DB.employees = DB.employees.filter(function (x) { return x.id !== e.id; });
       DB.projects.forEach(function (p) {
         p.memberIds = (p.memberIds || []).filter(function (m) { return m !== e.id; });
       });
+      /* nobody keeps a deleted person as their manager / department head */
+      DB.employees.forEach(function (x) { if (Number(x.managerId) === Number(e.id)) x.managerId = null; });
+      DB.departments.forEach(function (d) { if (Number(d.headId) === Number(e.id)) d.headId = null; });
+      logActivity('\uD83D\uDDD1\uFE0F', '#FEF2F2', '<strong>' + U.esc(e.name) + '</strong> removed from the team');
       return ok(true);
     },
 
@@ -1263,7 +1285,7 @@
         title: payload.title,
         content: U.sanitizeHtml(payload.content),      // XSS — sanitize on write
         date: U.isoDate(new Date()),
-        recipients: payload.recipients || 'all',
+        recipients: normRecipients(payload.recipients),
         priority: payload.priority || 'Normal',
         status: payload.status || 'Draft',
         readBy: [], notReadBy: [],
@@ -1277,6 +1299,7 @@
       var n = findOr404(DB.notices, id);
       if (!n) return fail('Notice not found', 'NOT_FOUND');
       if (patch && patch.content) patch.content = U.sanitizeHtml(patch.content);
+      if (patch && patch.recipients !== undefined) patch.recipients = normRecipients(patch.recipients);
       Object.assign(n, patch || {});
       return ok(clone(n));
     },
@@ -1286,9 +1309,14 @@
       n.status = 'Sent';
       n.date = U.isoDate(new Date());
       var targets = recipientIds(n.recipients);
+      if (!targets.length) return fail('Nobody to send this notice to \u2014 pick at least one active employee', 'VALIDATION');
       n.notReadBy = targets.filter(function (t) { return (n.readBy || []).indexOf(t) < 0; });
+      /* each person gets an in-app notification; the server emails every one of them */
+      var urgent = String(n.priority || '').toLowerCase() === 'urgent';
       targets.forEach(function (t) {
-        notify(t, 'INFO', 'New notice', n.title, 'NOTICE', n.id);
+        notify(t, 'INFO', (urgent ? 'Urgent notice: ' : 'New notice: ') + n.title,
+          urgent ? 'Urgent notice from ' + ((DB.settings && DB.settings.companyName) || 'the admin') : 'Notice from ' + ((DB.settings && DB.settings.companyName) || 'the admin'),
+          'NOTICE', n.id);
       });
       logActivity('\uD83D\uDCE2', '#FFFBEB', 'Notice <strong>' + U.esc(n.title) + '</strong> sent to ' + targets.length + ' people');
       return ok(clone(n));
@@ -1628,13 +1656,26 @@
     }
   };
 
+  /* notice recipients: 'all' | 'dept:<name>' | [employee ids] (chosen people) */
+  function normRecipients(r) {
+    if (Array.isArray(r)) {
+      var ids = r.map(Number).filter(function (x) { return isFinite(x); });
+      return ids.filter(function (x, i) { return ids.indexOf(x) === i; });
+    }
+    return r || 'all';
+  }
   function recipientIds(recipients) {
-    if (!recipients || recipients === 'all') return DB.employees.map(function (e) { return e.id; });
+    var active = DB.employees.filter(function (e) { return e.active !== false; });   // deactivated people get nothing
+    if (Array.isArray(recipients)) {
+      var want = recipients.map(Number);
+      return active.filter(function (e) { return want.indexOf(Number(e.id)) >= 0; }).map(function (e) { return e.id; });
+    }
+    if (!recipients || recipients === 'all') return active.map(function (e) { return e.id; });
     if (String(recipients).indexOf('dept:') === 0) {
       var name = String(recipients).slice(5);
       var dept = DB.departments.find(function (d) { return d.name === name; });
       if (!dept) return [];
-      return DB.employees.filter(function (e) { return e.deptId === dept.id; }).map(function (e) { return e.id; });
+      return active.filter(function (e) { return e.deptId === dept.id; }).map(function (e) { return e.id; });
     }
     return [];
   }

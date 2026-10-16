@@ -1,0 +1,29 @@
+/* ============================================================================
+   LARGE SCREENS (1440px and wider)
+   Loaded last. Phones, tablets and laptops are NOT affected — every rule
+   here is inside a min-width media query. Cards and grids grow to use the
+   extra width instead of leaving empty space or stretching 3 huge cards.
+   ============================================================================ */
+@media (min-width: 1440px) {
+  /* dashboard number boxes: fill the whole row */
+  .dstats { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important; }
+
+  /* "Projects Health" cards: grow to share the row instead of fixed 200px */
+  .projects-scroll { flex-wrap: wrap; overflow-x: visible; }
+  .projects-scroll > .project-health-card { flex: 1 1 220px; max-width: none; min-width: 220px; }
+
+  /* employee + project cards: more, normal-size columns */
+  .emp-cards     { grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)) !important; }
+  .project-cards { grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)) !important; }
+
+  /* department / penalty-rule cards */
+  #dept-cards, #view-penalties .grid-3 { grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)) !important; }
+
+  /* side panel a little wider so details aren't cramped */
+  #slide-panel { width: min(640px, 40vw); }
+}
+
+@media (min-width: 1900px) {
+  .dash-row { grid-template-columns: 1fr 400px; }
+  .emp-cards     { grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)) !important; }
+}

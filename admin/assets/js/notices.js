@@ -17,6 +17,52 @@ let noticeCompose = {
   filterTab: 'All'
 };
 
+/* active (not deactivated) employee? */
+function _ncActive(id) {
+  const r = (DataAPI.raw().employees || []).find(x => x.id === id);
+  return !r || r.active !== false;
+}
+/* pick individual employees for a notice */
+function _ncPeoplePicker() {
+  const sel = noticeCompose.recipients.map(Number);
+  const emps = STATE.employees.filter(e => _ncActive(e.id)).slice().sort((a, b) => a.name.localeCompare(b.name));
+  return `<div style="border:1px solid var(--b1);border-radius:var(--r8);padding:8px;background:var(--surface)">
+    <input class="form-input" id="nc-people-q" placeholder="Search name or department\u2026" style="height:34px;font-size:12.5px;margin-bottom:6px" oninput="_ncPeopleFilter(this.value)">
+    <div style="display:flex;gap:6px;margin-bottom:6px">
+      <button class="btn btn-secondary btn-xs" type="button" onclick="_ncPeopleAll(true)">Select shown</button>
+      <button class="btn btn-secondary btn-xs" type="button" onclick="_ncPeopleAll(false)">Clear</button>
+    </div>
+    <div id="nc-people-list" style="max-height:240px;overflow-y:auto;display:flex;flex-direction:column;gap:2px">
+      ${emps.map(e => `<label class="nc-person" data-q="${escAttr((e.name + ' ' + e.dept + ' ' + (e.role || '')).toLowerCase())}" style="display:flex;align-items:center;gap:8px;padding:6px 6px;border-radius:6px;cursor:pointer;font-size:12.5px">
+        <input type="checkbox" value="${e.id}" ${sel.includes(e.id) ? 'checked' : ''} onchange="_ncPeopleToggle(${e.id}, this.checked)" style="accent-color:var(--t1)">
+        <span class="avatar" style="background:${e.color};width:22px;height:22px;font-size:9px;flex-shrink:0">${e.avatar}</span>
+        <span style="flex:1;min-width:0"><span style="font-weight:600">${esc(e.name)}</span><span style="display:block;font-size:11px;color:var(--t3)">${esc(e.dept)}${e.email ? ' \u00b7 ' + esc(e.email) : ''}</span></span>
+      </label>`).join('') || '<div style="font-size:12px;color:var(--t3);padding:6px">No active employees.</div>'}
+    </div>
+  </div>`;
+}
+function _ncPeopleToggle(id, on) {
+  if (!Array.isArray(noticeCompose.recipients)) noticeCompose.recipients = [];
+  const list = noticeCompose.recipients.map(Number).filter(x => x !== id);
+  if (on) list.push(id);
+  noticeCompose.recipients = list;
+  const c = document.getElementById('nc-people-count'); if (c) c.textContent = list.length;
+}
+function _ncPeopleFilter(q) {
+  q = String(q || '').toLowerCase().trim();
+  document.querySelectorAll('#nc-people-list .nc-person').forEach(el => { el.style.display = !q || el.dataset.q.includes(q) ? 'flex' : 'none'; });
+}
+function _ncPeopleAll(on) {
+  document.querySelectorAll('#nc-people-list .nc-person').forEach(el => {
+    if (el.style.display === 'none') return;
+    const cb = el.querySelector('input'); if (cb.checked !== on) { cb.checked = on; _ncPeopleToggle(Number(cb.value), on); }
+  });
+}
+function _ncNeedsPeople() {
+  if (Array.isArray(noticeCompose.recipients) && !noticeCompose.recipients.length) { toast('Pick at least one employee to send this notice to', 'error'); return true; }
+  return false;
+}
+
 function _ncKeepTyped() {
   if (typeof noticeCompose === 'undefined' || !noticeCompose.active) return;
   const t = document.getElementById('nc-title'), ed = document.getElementById('nc-editor');
@@ -40,9 +86,14 @@ function renderNoticesModule() {
   const active = notices.find(n => String(n.id) === String(STATE.currentNotice)) || notices[0];
 
   function recipLabel(r) {
+    if (Array.isArray(r)) {
+      const names = r.map(id => (STATE.employees.find(e => e.id === Number(id)) || {}).name).filter(Boolean);
+      if (!names.length) return 'No one selected';
+      return names.length <= 3 ? names.join(', ') : names.slice(0, 2).join(', ') + ' + ' + (names.length - 2) + ' more';
+    }
     if (!r || r === 'all') return 'All Employees';
-    if (r.startsWith('dept:')) return r.replace('dept:', '') + ' Department';
-    return r;
+    if (String(r).startsWith('dept:')) return String(r).replace('dept:', '') + ' Department';
+    return String(r);
   }
   function priorityChip(p) {
     const map = { Urgent: 'background:#FEE2E2;color:#DC2626', Normal: 'background:#F0EEE9;color:#5C5A60', Low: 'background:#DCFCE7;color:#166534' };
@@ -187,15 +238,24 @@ function renderNoticesModule() {
           <div class="card card-pad">
             <div style="font-size:13px;font-weight:600;margin-bottom:12px">Send To</div>
             <div style="display:flex;flex-direction:column;gap:8px">
-              ${[['all','🌐 All Employees']].concat(
-                STATE.departments.map(d => ['dept:' + d.name, '\uD83C\uDFE2 ' + esc(d.name) + ' (' + STATE.employees.filter(e => e.dept === d.name).length + ')'])
-              ).map(([val,lbl])=>`
-                <label style="display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid ${noticeCompose.recipients===val?'var(--t1)':'var(--b1)'};border-radius:var(--r6);cursor:pointer;background:${noticeCompose.recipients===val?'var(--s2)':'var(--surface)'};transition:.15s">
-                  <input type="radio" name="nc-recip" value="${val}" ${noticeCompose.recipients===val?'checked':''} onchange="noticeCompose.recipients='${escAttr(val)}';renderNoticesModule()" style="accent-color:var(--t1)">
+              ${[['all','🌐 All Employees (' + STATE.employees.filter(e => _ncActive(e.id)).length + ')']].concat(
+                STATE.departments.map(d => ['dept:' + d.name, '\uD83C\uDFE2 ' + esc(d.name) + ' (' + STATE.employees.filter(e => e.dept === d.name && _ncActive(e.id)).length + ')'])
+              ).map(([val,lbl])=>{
+                const on = !Array.isArray(noticeCompose.recipients) && noticeCompose.recipients===val;
+                return `<label style="display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid ${on?'var(--t1)':'var(--b1)'};border-radius:var(--r6);cursor:pointer;background:${on?'var(--s2)':'var(--surface)'};transition:.15s">
+                  <input type="radio" name="nc-recip" value="${escAttr(val)}" ${on?'checked':''} onchange="noticeCompose.recipients='${escAttr(val)}';renderNoticesModule()" style="accent-color:var(--t1)">
                   <span style="font-size:12px">${lbl}</span>
-                </label>
-              `).join('')}
+                </label>`;
+              }).join('')}
+              ${(function () {
+                const people = Array.isArray(noticeCompose.recipients);
+                return `<label style="display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid ${people?'var(--t1)':'var(--b1)'};border-radius:var(--r6);cursor:pointer;background:${people?'var(--s2)':'var(--surface)'};transition:.15s">
+                  <input type="radio" name="nc-recip" value="people" ${people?'checked':''} onchange="noticeCompose.recipients=[];renderNoticesModule()" style="accent-color:var(--t1)">
+                  <span style="font-size:12px">\uD83D\uDC64 Selected employees${people ? ' (<b id="nc-people-count">' + noticeCompose.recipients.length + '</b>)' : ''}</span>
+                </label>` + (people ? _ncPeoplePicker() : '');
+              })()}
             </div>
+            <div style="font-size:11.5px;color:var(--t3);margin-top:10px;line-height:1.5">\u2709\uFE0F Every person it goes to also gets this notice by email.</div>
           </div>
 
           <!-- Priority -->
@@ -286,9 +346,9 @@ function renderNoticesModule() {
           </div>
           <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
             <div style="display:flex;align-items:center;gap:6px">
-              <div style="width:26px;height:26px;border-radius:50%;background:#DBEAFE;color:#1D4ED8;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">RK</div>
+              <div style="width:26px;height:26px;border-radius:50%;background:#DBEAFE;color:#1D4ED8;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">${esc(_adminInitials())}</div>
               <div>
-                <div style="font-size:12px;font-weight:500">Rajesh Kumar</div>
+                <div style="font-size:12px;font-weight:500">${esc(_adminName())}</div>
                 <div style="font-size:10px;color:var(--t3)">Super Admin</div>
               </div>
             </div>
@@ -441,9 +501,9 @@ function renderNoticesModule() {
             </div>
             <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
               <div style="display:flex;align-items:center;gap:6px">
-                <div style="width:26px;height:26px;border-radius:50%;background:#DBEAFE;color:#1D4ED8;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">RK</div>
+                <div style="width:26px;height:26px;border-radius:50%;background:#DBEAFE;color:#1D4ED8;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">${esc(_adminInitials())}</div>
                 <div>
-                  <div style="font-size:12px;font-weight:500">Rajesh Kumar</div>
+                  <div style="font-size:12px;font-weight:500">${esc(_adminName())}</div>
                   <div style="font-size:10px;color:var(--t3)">Super Admin</div>
                 </div>
               </div>
@@ -597,6 +657,7 @@ function noticeSearch(q) {
 function noticeSendNow() {
   const title = document.getElementById('nc-title')?.value?.trim();
   if (!title) { toast('Notice title is required', 'error'); return; }
+  if (_ncNeedsPeople()) return;
   const content = document.getElementById('nc-editor')?.innerHTML || noticeCompose.content;
   const plainText = String(content || '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
   if (!plainText || plainText === 'Write your notice here…') { toast('Please write notice content', 'error'); return; }
@@ -627,7 +688,8 @@ function noticeSendNow() {
     STATE.currentNotice = created.id;
     noticeCompose.active = false;
     renderNoticesModule();
-    toast('Notice sent to team \u2713', 'success');
+    const n = (created.recipients && Array.isArray(created.recipients)) ? created.recipients.length : null;
+    toast(n != null ? 'Notice sent to ' + n + ' employee' + (n === 1 ? '' : 's') + ' (app + email) \u2713' : 'Notice sent to team (app + email) \u2713', 'success');
   }).catch(function (err) { toast(err.message, 'error'); });
 }
 function noticeSaveDraft() {
@@ -657,7 +719,7 @@ function noticeSendFromDetail(id) {
 function noticeEditDraft(id) {
   const n = STATE.notices.find(n=>String(n.id)===String(id));
   if (!n) return;
-  noticeCompose = { active:true, title:n.title, content:n.content, recipients:n.recipients, priority:n.priority, attachments:[...n.attachments], scheduleSend:false, scheduleDate:'', requireAck:n.requireAck||false, editingId:id };
+  noticeCompose = { active:true, title:n.title, content:n.content, recipients:Array.isArray(n.recipients) ? n.recipients.slice() : n.recipients, priority:n.priority, attachments:[...n.attachments], scheduleSend:false, scheduleDate:'', requireAck:n.requireAck||false, editingId:id };
   DataAPI.deleteNotice(id).then(function () { syncState(); renderNoticesModule(); });
 }
 function noticeDeleteConfirm(id) {

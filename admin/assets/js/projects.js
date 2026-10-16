@@ -70,6 +70,7 @@ function renderProjects() {
       <div class="project-card-meta">
         <span class="badge ${sc}">${p.status}</span>
         <span class="badge ${pc}">${p.priority}</span>
+        ${typeof pbCardBadge === 'function' ? pbCardBadge(p.id) : ''}
       </div>
       <div style="font-size:12px;color:var(--t3);margin-bottom:6px">Deadline: <span style="color:${urgencyColor(p.deadline)};font-weight:550">${urgencyLabel(p.deadline)}</span></div>
       <div style="margin-bottom:8px">
@@ -184,6 +185,7 @@ function openProjectDetail(id) {
         <button class="btn btn-primary btn-sm" onclick="openEditProjectModal(${p.id})">Assign Head</button>
       </div>
     </div>`}
+    ${typeof pbOverviewCard === 'function' ? pbOverviewCard(p.id) : ''}
     <div class="card card-pad">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
         <div style="font-size:13px;font-weight:600">Description</div>
@@ -436,6 +438,7 @@ function openAddProjectModal() {
       <div class="form-group"><label class="form-label">Client Name *</label><input class="form-input" id="ap-client" placeholder="Client company"><div class="form-error" id="ap-client-err">Required</div></div>
     </div>
     ${_clientFields('ap', {})}
+    ${typeof _billingFields === 'function' ? _billingFields('ap', {}) : ''}
     <div class="form-row">
       <div class="form-group"><label class="form-label">Status</label><select class="form-select" id="ap-status"><option>Planning</option><option>Active</option><option>On Hold</option></select></div>
       <div class="form-group"><label class="form-label">Priority</label><select class="form-select" id="ap-priority"><option>High</option><option>Medium</option><option>Low</option></select></div>
@@ -466,7 +469,9 @@ function addProject() {
   const team = getPickerSelected('ap');
   const headId = parseInt(document.getElementById('ap-head').value) || null;
   if (!_clientEmailOk('ap')) return;
-  const value = parseFloat(document.getElementById('ap-value').value) || 0;
+  const billing = typeof _readBilling === 'function' ? _readBilling('ap') : { type: 'FIXED' };
+  if (billing.error) return;
+  const value = billing.type === 'RECURRING' ? billing.contractValuePaise / 100 : (parseFloat(document.getElementById('ap-value').value) || 0);
   if (value <= 0) { toast('Enter the total project value (what the client pays)', 'error'); document.getElementById('ap-value').focus(); return; }
   const budget = parseFloat(document.getElementById('ap-budget').value) || 0;
   if (budget > value) { toast('Note: the budget to spend is more than the project value \u2014 this project will make a loss', 'error'); }
@@ -489,12 +494,15 @@ function addProject() {
     spentPaise: 0,
     ..._readAdvance('ap', Utils.rupeesToPaise(value)),
     description: document.getElementById('ap-desc').value
+  }).then(function (proj) {
+    syncState();
+    return billing.type === 'RECURRING' && typeof pbApply === 'function' ? pbApply(proj.id, billing) : null;
   }).then(function () {
     syncState();
     closeModal();
     renderProjects();
-    toast(`Project "${esc(name)}" created`, 'success');
-  }).catch(function (err) { toast(err.message, 'error'); });
+    toast(`Project "${esc(name)}" created` + (billing.type === 'RECURRING' ? ' \u2014 recurring invoices set up' : ''), 'success');
+  }).catch(function (err) { syncState(); toast(err.message, 'error'); });
 }
 
 function openEditProjectModal(id) {
@@ -506,6 +514,7 @@ function openEditProjectModal(id) {
       <div class="form-group"><label class="form-label">Client Name *</label><input class="form-input" id="ep-client" value="${esc(p.client)}"></div>
     </div>
     ${_clientFields('ep', p)}
+    ${typeof _billingFields === 'function' ? _billingFields('ep', DataAPI.raw().projects.find(x => x.id === id) || {}) : ''}
     <div class="form-row">
       <div class="form-group"><label class="form-label">Status</label><select class="form-select" id="ep-status"><option${p.status==='Planning'?' selected':''}>Planning</option><option${p.status==='Active'?' selected':''}>Active</option><option${p.status==='On Hold'?' selected':''}>On Hold</option><option${p.status==='Completed'?' selected':''}>Completed</option></select></div>
       <div class="form-group"><label class="form-label">Priority</label><select class="form-select" id="ep-priority"><option${p.priority==='High'?' selected':''}>High</option><option${p.priority==='Medium'?' selected':''}>Medium</option><option${p.priority==='Low'?' selected':''}>Low</option></select></div>
@@ -538,6 +547,7 @@ function openEditProjectModal(id) {
     ${_advanceFields('ep', p)}
     <div class="form-group"><label class="form-label">Description</label><textarea class="form-textarea" id="ep-desc">${esc(projectDescriptionText(p.desc))}</textarea></div>
   `, `<button class="btn btn-danger btn-sm" onclick="deleteProject(${id})">Delete</button><div style="flex:1"></div><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveEditProject(${id})">Save Changes</button>`);
+  if (typeof pbToggle === 'function') pbToggle('ep');
 }
 
 function saveEditProject(id) {
@@ -551,6 +561,11 @@ function saveEditProject(id) {
   if (headId && !team.includes(headId)) team.unshift(headId);
   const deptName = document.getElementById('ep-dept').value;
   const dept = STATE.departments.find(function (d) { return d.name === deptName; });
+  const billing = typeof _readBilling === 'function' ? _readBilling('ep') : { type: 'FIXED' };
+  if (billing.error) return;
+  const valueRs = billing.type === 'RECURRING' ? billing.contractValuePaise / 100 : (parseFloat(document.getElementById('ep-value').value) || p.value);
+  const wasRaw = DataAPI.raw().projects.find(x => x.id === id) || {};
+  const billingChanged = billing.type === 'RECURRING' || wasRaw.billingType === 'RECURRING';
   DataAPI.updateProject(id, {
     name: name, clientName: client, ..._readClient('ep'),
     status: Schema.normProjectStatus(document.getElementById('ep-status').value),
@@ -559,11 +574,17 @@ function saveEditProject(id) {
     headId: headId,
     memberIds: team,
     deadline: document.getElementById('ep-deadline').value,
-    contractValuePaise: Utils.rupeesToPaise(parseFloat(document.getElementById('ep-value').value) || p.value),
+    contractValuePaise: Utils.rupeesToPaise(valueRs),
     budgetPaise: Utils.rupeesToPaise(parseFloat(document.getElementById('ep-budget').value) || 0),
-    ..._readAdvance('ep', Utils.rupeesToPaise(parseFloat(document.getElementById('ep-value').value) || p.value)),
+    ..._readAdvance('ep', Utils.rupeesToPaise(valueRs)),
     description: document.getElementById('ep-desc').value
-  }).then(syncAndRefresh).catch(function (err) { toast(err.message, 'error'); });
+  }).then(function (r) {
+    syncState();
+    return billingChanged && typeof pbApply === 'function' ? pbApply(id, billing) : r;
+  }).then(function () {
+    syncAndRefresh();
+    if (STATE.currentModule === 'project-detail' && STATE.currentProject === id) openProjectDetail(id);
+  }).catch(function (err) { syncState(); toast(err.message, 'error'); });
   closeModal();
   renderProjects();
   if (STATE.currentModule === 'project-detail' && STATE.currentProject === id) openProjectDetail(id);

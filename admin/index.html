@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <title>Oment — Super Admin</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,6 +18,7 @@
 <link rel="stylesheet" href="assets/css/responsive.css">
 <link rel="stylesheet" href="assets/css/help.css">
 <link rel="stylesheet" href="../shared/ios-theme.css">   <!-- iOS theme layer — remove this line to restore the original look -->
+<link rel="stylesheet" href="assets/css/wide.css">   <!-- large screens only (1440px+) -->
 </head>
 <body>
 <a href="#content" class="skip-link">Skip to main content</a>
@@ -31,9 +35,9 @@
       <div class="logo-wordmark">Oment</div>
     </div>
     <div class="admin-pill" onclick="openMyProfile()" style="cursor:pointer" title="My account">
-      <div class="avatar" style="background:#2563EB" id="sidebar-avatar">RK</div>
+      <div class="avatar" style="background:#2563EB" id="sidebar-avatar"></div>
       <div class="admin-info">
-        <div class="admin-name" id="sidebar-name">Rajesh Kumar</div>
+        <div class="admin-name" id="sidebar-name"></div>
         <div class="admin-role">Super Admin</div>
       </div>
     </div>
@@ -106,7 +110,7 @@
           <div id="notif-list"></div>
         </div>
       </div>
-      <div class="avatar avatar-sm" style="background:#2563EB;cursor:pointer" id="topbar-avatar" onclick="openMyProfile()" title="My account">RK</div>
+      <div class="avatar avatar-sm" style="background:#2563EB;cursor:pointer" id="topbar-avatar" onclick="openMyProfile()" title="My account"></div>
     </div>
   </div>
 
@@ -276,8 +280,10 @@
 <script src="assets/js/hrm.js"></script>
 <script src="assets/js/profitability.js"></script>
 <script src="assets/js/payouts.js"></script>
+<script src="assets/js/paystatement.js"></script>
 <script src="assets/js/penalties.js"></script>
 <script src="assets/js/projects.js"></script>
+<script src="assets/js/projectbilling.js"></script>
 <script src="assets/js/milestones.js"></script>
 <script src="assets/js/deliverables.js"></script>
 <script src="assets/js/subtasks.js"></script>

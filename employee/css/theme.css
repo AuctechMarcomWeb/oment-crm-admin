@@ -307,3 +307,13 @@ tr:last-child td { border-bottom: 0 !important; }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
+/* ── large screens (1440px and wider) ───────────────────────────────────────
+   Pages use the full width instead of stopping at 1280px. Smaller screens
+   are not affected. */
+@media (min-width: 1440px) {
+  .view > * { max-width: none; }
+  .view { padding: 30px 44px 44px !important; }
+}
+@media (min-width: 1900px) {
+  .view { padding: 34px 56px 48px !important; }
+}

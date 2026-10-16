@@ -446,67 +446,11 @@ function removeEmpFromDept(empId, deptName, deptId) {
   });
 }
 
-/* ── Add Employee directly to a specific department ── */
+/* ── Add Employee directly to a specific department ──
+   Opens the same full form as Employees → Add (login, salary, address…),
+   with this department already chosen. */
 function openAddEmpToDept(deptName) {
-  // Close any open panel first so modal shows on top
   closePanel();
-  openModal('Add Employee to ' + deptName, `
-    <div style="display:flex;align-items:center;justify-content:center;margin-bottom:20px">
-      <div class="avatar avatar-xl" style="background:var(--s3);color:var(--t3)">?</div>
-    </div>
-    <div style="background:var(--blue-light);border-radius:var(--r8);padding:8px 12px;margin-bottom:16px;display:flex;align-items:center;gap:8px">
-      <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" stroke="var(--blue)" stroke-width="1.8"/><polyline points="13 2 13 9 20 9" stroke="var(--blue)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span style="font-size:12.5px;color:var(--blue);font-weight:550">Will be added to <strong>${deptName}</strong> department</span>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Full Name *</label><input class="form-input" id="ade-name" placeholder="e.g. Rahul Verma"><div class="form-error" id="ade-name-err">Required</div></div>
-      <div class="form-group"><label class="form-label">Email *</label><input class="form-input" id="ade-email" type="email" placeholder="rahul@oment.in"><div class="form-error" id="ade-email-err">Valid email required</div></div>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Phone</label><input class="form-input" id="ade-phone" placeholder="+91 98765 00000" type="tel"></div>
-      <div class="form-group"><label class="form-label">Role / Designation *</label><input class="form-input" id="ade-role" placeholder="e.g. Senior Developer"><div class="form-error" id="ade-role-err">Required</div></div>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Reporting Manager</label><select class="form-select" id="ade-manager"><option value="">Select…</option>${STATE.employees.filter(e=>e.dept===deptName).map(e=>`<option value="${e.id}">${esc(e.name)}</option>`).join('')}${STATE.employees.filter(e=>e.dept!==deptName).length?`<optgroup label="Other Departments">${STATE.employees.filter(e=>e.dept!==deptName).map(e=>`<option value="${e.id}">${esc(e.name)} (${esc(e.dept)})</option>`).join('')}</optgroup>`:''}
-      </select></div>
-      <div class="form-group"><label class="form-label">Starting Date</label><input class="form-input" id="ade-date" type="date" value="${Utils.isoDate(new Date())}"></div>
-    </div>
-  `,
-  `<button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="addEmployeeToDept('${deptName}')">
-    <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="1.8"/><circle cx="8.5" cy="7" r="4" stroke="currentColor" stroke-width="1.8"/><line x1="20" y1="8" x2="20" y2="14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="23" y1="11" x2="17" y2="11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-    Add to ${deptName}
-  </button>`);
+  openAddEmpModal(deptName);
 }
-
-function addEmployeeToDept(deptName) {
-  const name  = document.getElementById('ade-name')?.value?.trim();
-  const email = document.getElementById('ade-email')?.value?.trim();
-  const role  = document.getElementById('ade-role')?.value?.trim();
-  let valid = true;
-  if (!name)  { document.getElementById('ade-name').classList.add('input-error');  document.getElementById('ade-name-err').classList.add('show');  valid=false; }
-  if (!email || !email.includes('@')) { document.getElementById('ade-email').classList.add('input-error'); document.getElementById('ade-email-err').classList.add('show'); valid=false; }
-  if (!role)  { document.getElementById('ade-role').classList.add('input-error');  document.getElementById('ade-role-err').classList.add('show');  valid=false; }
-  if (!valid) return;
-  const managerId = document.getElementById('ade-manager')?.value;
-  const manager = STATE.employees.find(e=>e.id==managerId);
-  const newEmp = {
-    id: Date.now(), name, role, dept: deptName, email,
-    phone: document.getElementById('ade-phone')?.value || '',
-    status: 'Present', score: 75, tasks: 0,
-    joined: document.getElementById('ade-date')?.value || Utils.isoDate(new Date()),
-    manager: manager?.name || 'Rajesh Kumar',
-    avatar: initials(name),
-    color: getColor(STATE.employees.length)
-  };
-  DataAPI.createEmployee({
-    name: newEmp.name, role: newEmp.role, email: newEmp.email, phone: newEmp.phone,
-    deptId: (STATE.departments.find(function (x) { return x.name === newEmp.dept; }) || {}).id,
-    avatarBg: newEmp.color, avatarFg: '#ffffff', color: newEmp.color,
-    joinedAt: Utils.isoDate(new Date())
-  }).then(syncAndRefresh).catch(function (e) { toast(e.message, 'error'); });
-  closeModal();
-  renderDepartments();
-  if (STATE.currentModule === 'employees') renderEmployees();
-  toast(`${name} added to ${deptName}`, 'success');
-  STATE.activityFeed.unshift({ icon:'👤', color:'#EFF6FF', text:`<strong>${name}</strong> (${role}) joined <strong>${deptName}</strong>`, time:'Just now' });
-}
+function addEmployeeToDept() { addEmployee(); }

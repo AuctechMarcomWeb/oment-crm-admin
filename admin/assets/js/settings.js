@@ -14,22 +14,25 @@ function renderSettings() {
     ['data', 'Data']
   ];
 
+  const canSave = tab !== 'data' && tab !== 'account';
   v.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
-      <div>
-        <div class="section-title" style="font-size:20px">Settings</div>
-        <div class="section-sub">Company profile, billing defaults and workspace preferences</div>
+    <div class="set-wrap">
+      <div class="set-head">
+        <div>
+          <div class="section-title" style="font-size:20px">Settings</div>
+          <div class="section-sub">Company profile, billing defaults and workspace preferences</div>
+        </div>
+        ${canSave ? '<button class="btn btn-primary btn-sm" onclick="saveSettings()">Save changes</button>' : ''}
       </div>
-      <button class="btn btn-primary btn-sm" onclick="saveSettings()">Save changes</button>
-    </div>
 
-    <div class="tab-bar" style="margin-bottom:18px">
-      ${tabs.map(([k, label]) => `
-        <button class="tab-btn${tab === k ? ' active' : ''}" onclick="setSettingsTab('${k}')">${label}</button>
-      `).join('')}
-    </div>
+      <div class="tab-bar set-tabs">
+        ${tabs.map(([k, label]) => `
+          <button class="tab-btn${tab === k ? ' active' : ''}" onclick="setSettingsTab('${k}')">${label}</button>
+        `).join('')}
+      </div>
 
-    <div id="settings-pane">${_settingsPane(tab, s)}</div>
+      <div id="settings-pane">${_settingsPane(tab, s)}</div>
+    </div>
   `;
 }
 
@@ -40,7 +43,7 @@ function setSettingsTab(tab) {
 
 function _settingsPane(tab, s) {
   if (tab === 'company') return `
-    <div class="card card-pad" style="max-width:720px">
+    <div class="card card-pad set-card">
       <div class="form-group">
         <label class="form-label">Company name *</label>
         <input class="form-input" id="set-company" value="${escAttr(s.companyName || '')}">
@@ -66,10 +69,11 @@ function _settingsPane(tab, s) {
         <input class="form-input" value="${escAttr((STATE.adminUser || {}).name || '')} \u00B7 Super Admin" disabled style="opacity:.6">
         <div class="form-hint">Role changes require a workspace owner. Not editable here.</div>
       </div>
+      <div class="set-actions"><button class="btn btn-primary btn-sm" onclick="saveSettings()">Save changes</button></div>
     </div>`;
 
   if (tab === 'billing') return `
-    <div class="card card-pad" style="max-width:720px">
+    <div class="card card-pad set-card">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
         <div class="form-group">
           <label class="form-label">GSTIN</label>
@@ -102,10 +106,11 @@ function _settingsPane(tab, s) {
           <option value="USD" ${s.currency === 'USD' ? 'selected' : ''}>USD \u2014 US Dollar</option>
         </select>
       </div>
+      <div class="set-actions"><button class="btn btn-primary btn-sm" onclick="saveSettings()">Save changes</button></div>
     </div>`;
 
   if (tab === 'work') return `
-    <div class="card card-pad" style="max-width:720px">
+    <div class="card card-pad set-card">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
         <div class="form-group">
           <label class="form-label">Standard workday (hours)</label>
@@ -129,10 +134,11 @@ function _settingsPane(tab, s) {
           </span>
         </label>
       </div>
+      <div class="set-actions"><button class="btn btn-primary btn-sm" onclick="saveSettings()">Save changes</button></div>
     </div>`;
 
   if (tab === 'notify') return `
-    <div class="card card-pad" style="max-width:720px">
+    <div class="card card-pad set-card">
       <div class="form-group">
         <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
           <input type="checkbox" id="set-notify-submit" ${s.notifyOnSubmission ? 'checked' : ''}>
@@ -154,10 +160,12 @@ function _settingsPane(tab, s) {
       <div style="padding:12px 14px;background:var(--s2);border-radius:var(--r8);font-size:12.5px;color:var(--t2);margin-top:6px">
         ${window.OmentAPI ? 'Emails are sent by the server. Choose which ones in the <a href="#" onclick="setSettingsTab(\'email\');return false">Email</a> tab.' : 'Email delivery needs the backend \u2014 notifications are in-app only.'}
       </div>
+      <div class="set-actions"><button class="btn btn-primary btn-sm" onclick="saveSettings()">Save changes</button></div>
     </div>`;
 
   if (tab === 'account') return `
-    <div class="card card-pad" style="max-width:520px;margin-bottom:14px">
+   <div class="set-grid2">
+    <div class="card card-pad set-card">
       <div style="display:flex;align-items:center;gap:14px">
         <div class="avatar" style="width:52px;height:52px;font-size:18px;background:#2563EB">${esc((STATE.adminUser && STATE.adminUser.avatarInitials) || 'AD')}</div>
         <div>
@@ -166,9 +174,14 @@ function _settingsPane(tab, s) {
           <div style="font-size:12.5px;color:var(--t3)">Alerts go to ${esc(s.email || 'the billing email set in Company')}</div>
         </div>
       </div>
-      <div class="form-hint" style="margin-top:10px">Your sign-in username is set in the backend <code>.env</code> (ADMIN_USERNAME).</div>
+      <div style="display:flex;gap:8px;align-items:flex-end;margin-top:14px">
+        <div class="form-group" style="flex:1;margin:0"><label class="form-label" for="acc-name">Your name</label>
+          <input class="form-input" id="acc-name" maxlength="60" value="${escAttr((STATE.adminUser && STATE.adminUser.name) || '')}"></div>
+        <button class="btn btn-primary btn-sm" style="height:40px" onclick="saveAdminName()">Save name</button>
+      </div>
+      <div class="form-hint" style="margin-top:8px">Shown in the sidebar, in chats with employees and in emails. Your sign-in username is set in the backend <code>.env</code> (ADMIN_USERNAME).</div>
     </div>
-    <form class="card card-pad" style="max-width:520px" autocomplete="off" onsubmit="event.preventDefault();saveSettings()">
+    <form class="card card-pad set-card" autocomplete="off" onsubmit="event.preventDefault();saveSettings()">
       <!-- Catches the browser's saved username, so it doesn't land in the top search bar -->
       <input type="text" name="username" autocomplete="username" tabindex="-1" aria-hidden="true"
              style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" value="admin">
@@ -180,13 +193,14 @@ function _settingsPane(tab, s) {
       <div class="form-group"><label class="form-label" for="acc-new2">Repeat new password</label>
         <input class="form-input" id="acc-new2" name="new-password-repeat" type="password" autocomplete="new-password"></div>
       <div class="form-hint">${window.OmentAPI ? 'Saved on the server. If you later change ADMIN_PASSWORD in the backend .env, that value takes over on the next restart.' : 'Needs the backend server.'}</div>
-      <button type="submit" style="display:none"></button>
-    </form>`;
+      <div class="set-actions"><button type="submit" class="btn btn-primary btn-sm">Change password</button></div>
+    </form>
+   </div>`;
 
   if (tab === 'email') {
-    if (!window.OmentAPI) return `<div class="card card-pad" style="max-width:720px">Email needs the backend server.</div>`;
+    if (!window.OmentAPI) return `<div class="card card-pad set-card">Email needs the backend server.</div>`;
     setTimeout(_loadEmailPane, 0);
-    return `<div id="email-pane" class="card card-pad" style="max-width:820px"><div style="color:var(--t3);font-size:13px">Loading email settings\u2026</div></div>`;
+    return `<div id="email-pane" class="card card-pad set-card"><div style="color:var(--t3);font-size:13px">Loading email settings\u2026</div></div>`;
   }
 
   /* data tab */
@@ -199,7 +213,7 @@ function _settingsPane(tab, s) {
     ['Notices', DB.notices.length], ['Attendance records', DB.attendance.length]
   ];
   return `
-    <div class="card card-pad" style="max-width:720px">
+    <div class="card card-pad set-card">
       <div style="font-size:13px;font-weight:600;margin-bottom:12px">Workspace data</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:20px">
         ${counts.map(([label, n]) => `
@@ -215,8 +229,6 @@ function _settingsPane(tab, s) {
 
       <div style="display:flex;gap:10px;flex-wrap:wrap">
         <button class="btn btn-secondary btn-sm" onclick="exportWorkspace()">Export JSON</button>
-        <button class="btn btn-danger btn-sm" onclick="resetWorkspace('demo')">Reset to demo data</button>
-        ${window.OmentAPI ? '<button class="btn btn-danger btn-sm" onclick="resetWorkspace(\'empty\')">Start blank company</button>' : ''}
       </div>
     </div>`;
 }
@@ -365,6 +377,7 @@ function _emailPaneHtml(cfg, log) {
           <span style="display:block;font-size:12px;color:var(--t3);line-height:1.45">${esc(cfg.categoryLabels[k])}</span></span>
         </label>`).join('')}
     </div>
+    <div class="set-actions"><button class="btn btn-primary btn-sm" onclick="saveEmailSettings()">Save email settings</button></div>
 
     <div style="display:flex;gap:8px;align-items:center;margin-top:18px;flex-wrap:wrap">
       <input class="form-input" id="em-test-to" type="email" placeholder="${escAttr(cfg.resolvedAdminEmail || 'you@example.com')}" style="max-width:260px">
@@ -438,4 +451,19 @@ function previewEmail(id) {
       if (f) f.srcdoc = m.html || ('<pre style="font-family:inherit;white-space:pre-wrap;padding:16px">' + esc(m.body || '') + '</pre>');
     }, 30);
   }).catch(function (err) { toast(err.message, 'error'); });
+}
+
+/* Change the admin's display name (Settings → My account) */
+function saveAdminName() {
+  const v = (document.getElementById('acc-name')?.value || '').trim();
+  if (v.length < 2) { toast('Enter your name', 'error'); return; }
+  if (typeof DataAPI.updateAdminProfile !== 'function') { toast('Needs the backend server', 'error'); return; }
+  DataAPI.updateAdminProfile({ name: v }).then(function () {
+    return DataAPI.init ? DataAPI.init() : null;
+  }).then(function () {
+    syncState();
+    if (typeof renderSettings === 'function') renderSettings();
+    if (typeof refreshAdminIdentity === 'function') refreshAdminIdentity();
+    toast('Name saved', 'success');
+  }).catch(function (e) { toast(e.message, 'error'); });
 }

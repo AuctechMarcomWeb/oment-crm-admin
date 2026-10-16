@@ -133,6 +133,17 @@ function _empPerfHtml(e) {
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">
       ${box('Open', open, 'var(--t2)')}${box('In review', inReview, 'var(--purple, #7C3AED)')}${box('Returned', returned, returned ? 'var(--red)' : 'var(--t2)', 'Tasks sent back for changes at least once')}${box('Overdue', overdue, overdue ? 'var(--red)' : 'var(--t2)')}
     </div>
+    ${(function () {
+      const pd = _empPenaltyData(e.id), t = pd.totals, n = pd.rows.length;
+      if (!n) return '<div style="font-size:12px;color:var(--t3);margin-bottom:14px">\u2696\uFE0F No penalties.</div>';
+      const R = p => Utils.fmtRupee(p || 0).replace('.00', '');
+      return '<div onclick="switchTab(document.querySelector(\'#slide-panel .tab-btn:nth-child(5)\'),\'ep-penalties\')" style="cursor:pointer;display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:12.5px;background:var(--red-light);border-radius:var(--r8);padding:9px 12px;margin-bottom:14px">' +
+        '<b>\u2696\uFE0F ' + n + ' penalt' + (n === 1 ? 'y' : 'ies') + '</b>' +
+        '<span>applied ' + R(t.applied) + '</span>' +
+        (t.back ? '<span style="color:var(--green)">' + R(t.back) + ' given back (' + t.settled + ' settled on appeal)</span>' : (t.settled ? '<span>' + t.settled + ' appeal(s) settled</span>' : '')) +
+        (t.open ? '<span style="color:var(--amber)">' + t.open + ' appeal open</span>' : '') +
+        '<span style="margin-left:auto;font-family:var(--mono);font-weight:700;color:var(--red)">net \u2212' + R(t.net) + '</span></div>';
+    })()}
     ${sc.sample ? `<div style="font-size:12px;color:var(--t2);margin-bottom:14px;line-height:1.7">Score parts:
       delivery <strong>${sc.delivery == null ? '\u2014' : sc.delivery}</strong> \u00b7
       on time <strong>${sc.onTime == null ? '\u2014' : sc.onTime}</strong> \u00b7
@@ -154,6 +165,21 @@ function setEmployeeActive(id, active) {
       syncState(); closePanel();
       if (typeof renderEmployees === 'function') renderEmployees();
       toast(active ? 'Employee reactivated' : 'Employee deactivated', 'success');
+    }).catch(function (err) { toast(err.message, 'error'); });
+  });
+}
+
+/* Delete permanently. Past records (attendance, payments, finished work)
+   stay in reports; the login is removed. Blocked while they have open work. */
+function deleteEmployeeConfirm(id) {
+  const e = STATE.employees.find(x => x.id === id);
+  if (!e) return;
+  showConfirm(`Delete ${e.name} permanently? Their login is removed and they disappear from the team. Past attendance, payments and finished work stay in reports. This can\u2019t be undone \u2014 use Deactivate if they may come back.`, function () {
+    DataAPI.deleteEmployee(id).then(function () {
+      syncState(); closePanel(); closeModal();
+      if (typeof renderEmployees === 'function' && STATE.currentModule === 'employees') renderEmployees();
+      if (typeof renderDepartments === 'function' && STATE.currentModule === 'departments') renderDepartments();
+      toast(e.name + ' deleted', 'success');
     }).catch(function (err) { toast(err.message, 'error'); });
   });
 }
@@ -224,18 +250,67 @@ function filterEmployees() {
   }).join('');
 }
 
-function _empPenaltyHtml(id) {
+/* Every penalty for one employee: what was applied, what happened on appeal
+   (removed / changed / rejected / still open) and the final amount kept. */
+function _empPenaltyData(id) {
   const DB = DataAPI.raw();
+  const appeals = (DB.disputes || []).filter(x => x.kind === 'PENALTY_APPEAL');
   const rows = (DB.walletEntries || []).filter(w => Number(w.employeeId) === Number(id) && w.type === 'DEDUCTION' && w.meta && w.meta.penalty)
-    .slice().sort((a,b) => String(b.createdAt).localeCompare(String(a.createdAt)));
-  const total = rows.reduce((s,w) => s + Math.abs(w.amountPaise || 0), 0);
+    .slice().sort((a, b) => String((b.meta.penalty.date || b.createdAt)).localeCompare(String(a.meta.penalty.date || a.createdAt)))
+    .map(function (w) {
+      const original = Math.abs(Number(w.amountPaise) || 0);
+      const ap = appeals.find(x => String(x.entryId) === String(w.id)) || null;
+      const final = ap && ap.status !== 'OPEN' && ap.finalPenaltyPaise != null ? Math.max(0, Number(ap.finalPenaltyPaise) || 0) : original;
+      let state = 'APPLIED';
+      if (ap && ap.status === 'OPEN') state = 'APPEAL_OPEN';
+      else if (ap && ap.status === 'REJECTED') state = 'REJECTED';
+      else if (ap && ap.status === 'ACCEPTED') state = final === 0 ? 'REMOVED' : 'CHANGED';
+      return { w: w, p: w.meta.penalty || {}, original: original, final: final, back: original - final, appeal: ap, state: state };
+    });
+  const t = rows.reduce((a, r) => { a.applied += r.original; a.back += Math.max(0, r.back); a.net += r.final; if (r.state !== 'APPLIED' && r.state !== 'APPEAL_OPEN') a.settled++; if (r.state === 'APPEAL_OPEN') a.open++; return a; },
+    { applied: 0, back: 0, net: 0, settled: 0, open: 0 });
+  return { rows: rows, totals: t };
+}
+
+function _empPenaltyHtml(id) {
+  const data = _empPenaltyData(id), rows = data.rows, t = data.totals;
   const R = p => Utils.fmtRupee(p || 0).replace('.00','');
   if (!rows.length) return '<div class="empty-state"><div class="empty-icon">⚖️</div><div class="empty-title">No penalties</div><div class="empty-sub">No penalty has been applied to this employee.</div></div>';
-  return '<div style="background:var(--red-light);border:1px solid rgba(220,38,38,.15);padding:10px 12px;border-radius:var(--r8);margin-bottom:12px"><div style="font-size:10.5px;color:var(--red);text-transform:uppercase;font-weight:700;letter-spacing:.4px">Total deductions</div><div style="font-size:20px;font-weight:700;font-family:var(--mono);color:var(--red);margin-top:2px">−' + R(total) + '</div></div>' +
-    rows.map(function(w) {
-      const p = w.meta.penalty || {};
-      const date = p.date || String(w.createdAt).slice(0,10);
-      return '<div style="display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--b1)"><div style="width:30px;height:30px;border-radius:9px;background:var(--red-light);display:flex;align-items:center;justify-content:center">⚠️</div><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:650">' + esc(p.ruleName || 'Penalty') + '</div><div style="font-size:11.5px;color:var(--t3);margin-top:2px">' + esc(date) + ' · ' + esc(String(p.penaltyDays == null ? '—' : p.penaltyDays)) + ' day' + (Number(p.penaltyDays) === 1 ? '' : 's') + '</div><div style="font-size:12px;color:var(--t2);margin-top:5px">' + esc(w.why || p.reason || '') + '</div></div><div style="font-family:var(--mono);font-weight:700;color:var(--red);white-space:nowrap">−' + R(Math.abs(w.amountPaise)) + '</div></div>';
+  const LABEL = {
+    APPLIED:     ['No appeal', 'badge-grey'],
+    APPEAL_OPEN: ['Appeal open', 'badge-amber'],
+    REJECTED:    ['Appeal rejected — kept', 'badge-grey'],
+    REMOVED:     ['Appeal accepted — removed', 'badge-green'],
+    CHANGED:     ['Appeal accepted — changed', 'badge-blue']
+  };
+  const box = (l, v, c, sub) => '<div style="background:var(--s2);border-radius:var(--r8);padding:10px 12px"><div style="font-size:10.5px;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;font-weight:600">' + l + '</div>' +
+    '<div style="font-size:18px;font-weight:700;font-family:var(--mono);color:' + c + '">' + v + '</div>' + (sub ? '<div style="font-size:11px;color:var(--t3)">' + sub + '</div>' : '') + '</div>';
+  return '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:12px">' +
+      box('Applied', R(t.applied), 'var(--t1)', rows.length + ' penalt' + (rows.length === 1 ? 'y' : 'ies')) +
+      box('Given back', R(t.back), t.back ? 'var(--green)' : 'var(--t3)', t.settled + ' settled on appeal') +
+      box('Net deducted', '−' + R(t.net), 'var(--red)', t.open ? t.open + ' appeal open' : 'final amount kept') +
+    '</div>' +
+    rows.map(function (r) {
+      const p = r.p, date = p.date || String(r.w.createdAt).slice(0, 10), lab = LABEL[r.state];
+      const amountHtml = r.state === 'REMOVED'
+        ? '<div style="font-family:var(--mono);font-weight:700;color:var(--t3);text-decoration:line-through">−' + R(r.original) + '</div><div style="font-size:11px;color:var(--green);font-weight:600">₹0 now</div>'
+        : r.state === 'CHANGED'
+          ? '<div style="font-family:var(--mono);font-size:11.5px;color:var(--t3);text-decoration:line-through">−' + R(r.original) + '</div><div style="font-family:var(--mono);font-weight:700;color:var(--red)">−' + R(r.final) + '</div>'
+          : '<div style="font-family:var(--mono);font-weight:700;color:var(--red)">−' + R(r.final) + '</div>';
+      const ap = r.appeal;
+      return '<div style="display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--b1)">' +
+        '<div style="width:30px;height:30px;border-radius:9px;background:' + (r.state === 'REMOVED' ? 'var(--green-light)' : 'var(--red-light)') + ';display:flex;align-items:center;justify-content:center;flex-shrink:0">' + (r.state === 'REMOVED' ? '✓' : '⚠️') + '</div>' +
+        '<div style="flex:1;min-width:0">' +
+          '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span style="font-size:13px;font-weight:650">' + esc(p.ruleName || 'Penalty') + '</span><span class="badge ' + lab[1] + '">' + lab[0] + '</span></div>' +
+          '<div style="font-size:11.5px;color:var(--t3);margin-top:2px">' + esc(date) + ' · ' + esc(String(p.penaltyDays == null ? '—' : p.penaltyDays)) + ' day' + (Number(p.penaltyDays) === 1 ? '' : 's') + '</div>' +
+          '<div style="font-size:12px;color:var(--t2);margin-top:5px">' + esc(r.w.why || p.reason || '') + '</div>' +
+          (ap ? '<div style="font-size:12px;margin-top:6px;padding:7px 10px;border-radius:var(--r8);background:var(--s2)">' +
+            '<b>Employee appeal:</b> ' + esc(ap.reason || '') +
+            (ap.status !== 'OPEN' ? '<br><b>Your decision:</b> ' + esc(ap.resolutionNote || '—') + (ap.resolvedAt ? ' <span style="color:var(--t3)">(' + esc(new Date(ap.resolvedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })) + ')</span>' : '') : '') +
+            (r.back > 0 ? '<br><span style="color:var(--green);font-weight:600">' + R(r.back) + ' given back to the employee</span>' : '') +
+          '</div>' : '') +
+        '</div>' +
+        '<div style="text-align:right;white-space:nowrap">' + amountHtml + '</div></div>';
     }).join('');
 }
 
@@ -268,7 +343,7 @@ function openEmpDetail(id) {
     </div>
     <div id="ep-overview" class="tab-pane active">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-        ${[['Email',e.email],['Phone',e.phone],['Department',e.dept],['Joined',fmtDate(e.joined)],['Manager',e.manager],['Active Tasks',e.tasks+' tasks']].map(([l,v])=>`<div><div style="font-size:11px;color:var(--t3);margin-bottom:2px;text-transform:uppercase;letter-spacing:0.3px">${l}</div><div style="font-size:13px;font-weight:550;color:var(--t1)">${v}</div></div>`).join('')}
+        ${[['Email',e.email],['Phone',e.phone],['Department',e.dept],['Joined',fmtDate(e.joined)],['Manager',e.manager],['Active Tasks',e.tasks+' tasks']].map(([l,v])=>`<div><div style="font-size:11px;color:var(--t3);margin-bottom:2px;text-transform:uppercase;letter-spacing:0.3px">${l}</div><div style="font-size:13px;font-weight:550;color:var(--t1)">${esc(v == null || v === '' ? '\u2014' : String(v))}</div></div>`).join('')}
       </div>
     </div>
     <div id="ep-tasks" class="tab-pane">
@@ -291,6 +366,7 @@ function openEmpDetail(id) {
     ${inactive
       ? `<button class="btn btn-secondary btn-sm" onclick="setEmployeeActive(${e.id}, true)">Reactivate</button>`
       : `<button class="btn btn-danger btn-sm" onclick="setEmployeeActive(${e.id}, false)">Deactivate</button>`}
+    <button class="btn btn-danger btn-sm" onclick="deleteEmployeeConfirm(${e.id})" title="Remove this employee permanently">Delete</button>
     <button class="btn btn-blue btn-sm" onclick="openAssignTaskToEmp(${e.id})">
       <svg width="13" height="13" fill="none" viewBox="0 0 24 24" style="margin-right:4px;vertical-align:-2px"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       Assign Task
@@ -488,9 +564,31 @@ function confirmAssignTaskToEmp(empId) {
   }, 50);
 }
 
-function openAddEmpModal() {
+/* Reporting-manager <option>s: people in the chosen department first */
+function _mgrOptions(deptName, selectedId, excludeId) {
+  const pick = STATE.employees.filter(e => e.id !== excludeId);
+  const opt = e => `<option value="${e.id}"${Number(e.id) === Number(selectedId) ? ' selected' : ''}>${esc(e.name)}${deptName && e.dept !== deptName ? ' (' + esc(e.dept) + ')' : ''}</option>`;
+  if (!deptName) return pick.map(opt).join('');
+  const inDept = pick.filter(e => e.dept === deptName), other = pick.filter(e => e.dept !== deptName);
+  return inDept.map(opt).join('') + (other.length ? `<optgroup label="Other departments">${other.map(opt).join('')}</optgroup>` : '');
+}
+function _deptHeadId(deptName) {
+  const d = STATE.departments.find(x => x.name === deptName);
+  return d && d.headId != null ? d.headId : '';
+}
+/* department changed in the form → refresh the manager list (keeps a chosen manager) */
+function aeDeptChanged(selId, mgrId, excludeId) {
+  const deptName = document.getElementById(selId)?.value || '';
+  const m = document.getElementById(mgrId);
+  if (!m) return;
+  const keep = m.value || _deptHeadId(deptName);
+  m.innerHTML = `<option value="">Select\u2026</option>` + _mgrOptions(deptName, keep, excludeId);
+}
+
+function openAddEmpModal(presetDept) {
   const suggested = '';
-  openModal('Add New Employee', `
+  const dName = presetDept && STATE.departments.some(d => d.name === presetDept) ? presetDept : '';
+  openModal(dName ? 'Add Employee to ' + esc(dName) : 'Add New Employee', `
     <div style="font-size:12.5px;color:var(--t3);margin-bottom:14px;background:var(--blue-light);padding:9px 12px;border-radius:var(--r8)">Every employee gets their own login for the employee app. Notifications go to the email below.</div>
     <div class="form-row">
       <div class="form-group"><label class="form-label">Full Name *</label><input class="form-input" id="ae-name" placeholder="Rahul Verma" oninput="aeSuggestUsername()"><div class="form-error" id="ae-name-err">Required</div></div>
@@ -502,8 +600,8 @@ function openAddEmpModal() {
     </div>
     <div class="form-group"><label class="form-label">Address *</label><textarea class="form-textarea" id="ae-address" rows="2" placeholder="House / street, city, state, PIN"></textarea><div class="form-error" id="ae-address-err">Required</div></div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Department *</label><select class="form-select" id="ae-dept"><option value="">Select\u2026</option>${STATE.departments.map(d=>`<option>${esc(d.name)}</option>`).join('')}</select></div>
-      <div class="form-group"><label class="form-label">Reporting Manager</label><select class="form-select" id="ae-manager"><option value="">Select\u2026</option>${STATE.employees.map(e=>`<option value="${e.id}">${esc(e.name)}</option>`).join('')}</select></div>
+      <div class="form-group"><label class="form-label">Department *</label><select class="form-select" id="ae-dept" onchange="aeDeptChanged('ae-dept','ae-manager')"><option value="">Select\u2026</option>${STATE.departments.map(d=>`<option${d.name===dName?' selected':''}>${esc(d.name)}</option>`).join('')}</select></div>
+      <div class="form-group"><label class="form-label">Reporting Manager</label><select class="form-select" id="ae-manager"><option value="">Select\u2026</option>${_mgrOptions(dName, dName ? _deptHeadId(dName) : '')}</select></div>
     </div>
     <div class="form-row">
       <div class="form-group"><label class="form-label">Monthly salary (\u20B9) *</label><input class="form-input" id="ae-salary" type="number" min="0" step="500" placeholder="e.g. 20800" oninput="aeRatePreview()"><div class="form-error" id="ae-salary-err">Required \u2014 drives per-hour costing</div></div>
@@ -525,7 +623,7 @@ function openAddEmpModal() {
       </div>
       <div style="font-size:11.5px;color:var(--t3)">The password is stored hashed, never plain. After creating, a credentials card appears \u2014 share it with the employee once; they should change it on first login.</div>
     </div>
-  `, `<button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="addEmployee()">Create Employee</button>`);
+  `, `<button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="addEmployee()">${dName ? 'Add to ' + esc(dName) : 'Create Employee'}</button>`);
 }
 
 function aeSuggestUsername() {
@@ -551,26 +649,34 @@ function aeRatePreview() {
 function openEditEmpModal(id) {
   const e = STATE.employees.find(x=>x.id===id);
   if(!e) return;
+  /* the full saved record (STATE.employees only keeps what the cards need) */
+  const r = (DataAPI.raw().employees || []).find(x => x.id === id) || {};
+  const v = (k, alt) => r[k] != null ? r[k] : (alt != null ? alt : '');
+  const salary = Math.round((Number(r.monthlySalaryPaise) || 0) / 100);
   openModal(`Edit: ${esc(e.name)}`, `
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Full Name</label><input class="form-input" id="ee-name" value="${esc(e.name)}"></div>
-      <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="ee-email" value="${esc(e.email)}" type="email"></div>
+      <div class="form-group"><label class="form-label">Full Name</label><input class="form-input" id="ee-name" value="${escAttr(v('name', e.name))}"></div>
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="ee-email" value="${escAttr(v('email', e.email))}" type="email"></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Phone</label><input class="form-input" id="ee-phone" value="${esc(e.phone)}"></div>
-      <div class="form-group"><label class="form-label">Role</label><input class="form-input" id="ee-role" value="${esc(e.role)}"></div>
+      <div class="form-group"><label class="form-label">Phone</label><input class="form-input" id="ee-phone" value="${escAttr(v('phone', e.phone))}"></div>
+      <div class="form-group"><label class="form-label">Role</label><input class="form-input" id="ee-role" value="${escAttr(v('role', e.role))}"></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Department</label><select class="form-select" id="ee-dept">${STATE.departments.map(d=>`<option${d.name===e.dept?' selected':''}>${esc(d.name)}</option>`).join('')}</select></div>
+      <div class="form-group"><label class="form-label">Department</label><select class="form-select" id="ee-dept" onchange="aeDeptChanged('ee-dept','ee-manager',${id})">${STATE.departments.map(d=>`<option${d.name===e.dept?' selected':''}>${esc(d.name)}</option>`).join('')}</select></div>
+      <div class="form-group"><label class="form-label">Reporting Manager</label><select class="form-select" id="ee-manager"><option value="">Select…</option>${_mgrOptions(e.dept, r.managerId, id)}</select></div>
+    </div>
+    <div class="form-row">
       <div class="form-group"><label class="form-label">Status</label><select class="form-select" id="ee-status"><option${e.status==='Present'?' selected':''}>Present</option><option${e.status==='Absent'?' selected':''}>Absent</option><option${e.status==='On Leave'?' selected':''}>On Leave</option></select></div>
+      <div class="form-group"><label class="form-label">Starting Date</label><input class="form-input" id="ee-date" type="date" value="${escAttr(String(v('joinedAt')).slice(0,10))}"></div>
     </div>
-    <div class="form-group"><label class="form-label">Address</label><textarea class="form-textarea" id="ee-address" rows="2">${esc(e.address||'')}</textarea></div>
+    <div class="form-group"><label class="form-label">Address</label><textarea class="form-textarea" id="ee-address" rows="2">${esc(v('address'))}</textarea></div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Monthly salary (\u20B9)</label><input class="form-input" id="ee-salary" type="number" min="0" step="500" value="${Math.round((e.monthlySalaryPaise||0)/100)||''}"></div>
-      <div class="form-group"><label class="form-label">Hours per day</label><input class="form-input" id="ee-hpd" type="number" min="1" max="16" step="0.5" value="${e.hoursPerDay||8}"><div style="font-size:11px;color:var(--t3);margin-top:4px">Cost/hr re-derives automatically on save</div></div>
+      <div class="form-group"><label class="form-label">Monthly salary (₹)</label><input class="form-input" id="ee-salary" type="number" min="0" step="500" value="${salary || ''}"></div>
+      <div class="form-group"><label class="form-label">Hours per day</label><input class="form-input" id="ee-hpd" type="number" min="1" max="16" step="0.5" value="${Number(r.hoursPerDay) || 8}"><div style="font-size:11px;color:var(--t3);margin-top:4px">Cost/hr re-derives automatically on save</div></div>
     </div>
     <div style="border-top:1px solid var(--b1);padding-top:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
-      <div style="font-size:12.5px;color:var(--t2)">Login: <b style="font-family:var(--mono)">${esc(e.username||'\u2014')}</b></div>
+      <div style="font-size:12.5px;color:var(--t2)">Login: <b style="font-family:var(--mono)">${esc(r.username||e.username||'—')}</b></div>
       <button class="btn btn-secondary btn-sm" type="button" onclick="resetEmpPassword(${id})">Reset password</button>
     </div>
   `, `<button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveEmpEdit(${id})">Save Changes</button>`);
@@ -593,6 +699,8 @@ function saveEmpEdit(id) {
     monthlySalaryPaise: Math.round((parseFloat(document.getElementById('ee-salary')?.value) || 0) * 100),
     hoursPerDay: parseFloat(document.getElementById('ee-hpd')?.value) || 8,
     deptId: dept ? dept.id : null,
+    managerId: document.getElementById('ee-manager')?.value ? Number(document.getElementById('ee-manager').value) : null,
+    joinedAt: document.getElementById('ee-date')?.value || undefined,
     attendanceStatus: statusMap[document.getElementById('ee-status').value] || 'PRESENT',
     avatarInitials: initials(name)
   }).then(function () {
@@ -625,10 +733,12 @@ function addEmployee() {
     monthlySalaryPaise: Math.round(salary * 100),
     hoursPerDay: parseFloat(val('ae-hpd')) || 8,
     deptId: (STATE.departments.find(d => d.name === dept) || {}).id,
+    managerId: g('ae-manager')?.value ? Number(g('ae-manager').value) : null,
     avatarBg: color, avatarFg: '#ffffff', color: color,
     joinedAt: g('ae-date').value || Utils.isoDate(new Date())
   }).then(function (emp) {
     syncState(); closeModal(); renderEmployees();
+    if (STATE.currentModule === 'departments' && typeof renderDepartments === 'function') renderDepartments();
     openModal('\u2713 ' + esc(emp.name) + ' created', `
       <div style="font-size:13px;color:var(--t2);margin-bottom:14px">Share these once with ${esc(emp.name.split(' ')[0])}. They sign in to the <b>employee app</b> with:</div>
       <div style="background:var(--s2);border-radius:var(--r10);padding:16px;font-family:var(--mono);font-size:15px;line-height:2">
@@ -683,7 +793,10 @@ function _loadEmpPay(id) {
       </div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px">
         ${(function () { const m = typeof poMoneyOf === 'function' ? poMoneyOf(id) : { earned: earned + bonus - deductions, paid: paid, remaining: balance };
-          return box('Earned', r(m.earned + deductions), 'var(--green)') + box('Deductions', r(deductions), 'var(--red)') + box('Paid', r(m.paid), 'var(--blue)') +
+          /* money given back on a penalty appeal lowers the deduction — it is not extra earnings */
+          const back = (w.entries || []).filter(x => x.meta && (x.meta.appealAdjustment || x.meta.penaltyAppealId)).reduce((s, x) => s + (x.amountPaise || 0), 0);
+          const netDed = Math.max(0, deductions - back);
+          return box('Earned', r(m.earned + netDed), 'var(--green)') + box('Deductions', r(netDed), 'var(--red)') + box('Paid', r(m.paid), 'var(--blue)') +
             box(m.remaining < 0 ? 'Paid in advance' : 'Still to pay', r(Math.abs(m.remaining)), m.remaining > 0 ? 'var(--amber)' : 'var(--t2)'); })()}
       </div>
       ${entries.length ? `<div style="border:1px solid var(--b1);border-radius:var(--r8);overflow:hidden">${entries.map(x => `

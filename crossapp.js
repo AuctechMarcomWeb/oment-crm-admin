@@ -255,10 +255,11 @@ async function boot(appDir) {
   ck(p1.team.some(m => m.employeeId === 9), '  Alex appears in project cost breakdown');
 
   const m0 = p1.marginPaise;
-  await A5.DataAPI.createInvoice({
-    clientName: swig.client, placeOfSupply: '29', projectId: swig.id,
+  const progInv = await A5.DataAPI.createInvoice({
+    clientName: swig.client, clientEmail: 'billing@client.test', placeOfSupply: '29', projectId: swig.id,
     lines: [{ description: 'Progress billing', qty: 1, ratePaise: 30000000 }]
   });
+  await A5.DataAPI.sendInvoice(progInv.id);      // a draft is not billed yet — send it
   const p2 = await A5.Profit.getProject(swig.id);
   ck(p2.marginPaise > m0, `\u2b50 invoicing lifted margin by ${A5.Utils.fmtRupee(p2.marginPaise - m0)}`);
   ck(p2.invoicedPaise > p1.invoicedPaise, '  invoiced revenue increased');
